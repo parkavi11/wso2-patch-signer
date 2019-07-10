@@ -1,1 +1,1 @@
-# wso2-patch-signer
+# Auto-patch-signer-service
