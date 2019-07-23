@@ -1,12 +1,18 @@
 package org.wso2.patchvalidator.client;
 
 import java.io.InputStream;
+import java.util.Properties;
+import org.apache.commons.httpclient.util.HttpURLConnection;
+import java.net.URL;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.woden.tool.converter.Convert;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.wso2.patchvalidator.exceptions.ServiceException;
@@ -25,22 +31,29 @@ import org.wso2.patchvalidator.util.Util;
 public class UatClient {
 
 
-    public static JSONObject getUatAccessToken(String uri, String grantType, String grantTypeValue, String authToken) {
+    public static JSONObject getUatAccessToken(String grantType, String username, String password, String scope, String key, String uri) {
 
-        String httpBody = grantType + "=" + grantTypeValue;
+//        String httpBody = "grant_type=password&username=wum-bot-uat@wso2.com@wso2umuat&password=CmTLMJgk0hBMU&scope=updates_delete";
 
+        String httpBody = "grantType=" + grantType + "&username=" + username + "&password=" + password + "&scope=" + scope + "&key=" + key + "&uri=" + uri ;
         JSONParser parser = new JSONParser();
         JSONObject resultObject;
 
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 
             HttpPost request = new HttpPost(uri);
+
+            request.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+
             StringEntity params = new StringEntity(httpBody);
 
-            request.addHeader("Authorization", authToken);
             request.setEntity(params);
 
+            request.setHeader("Authorization", key);
+            request.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
             HttpResponse response = httpClient.execute(request);
+
             InputStream inStream = response.getEntity().getContent();
             String result = Util.convertStreamToString(inStream);
             int statusCode = response.getStatusLine().getStatusCode();
@@ -50,17 +63,15 @@ public class UatClient {
                 return resultObject;
             } else {
                 throw new ServiceException("retrieving UAT access token failed, " + "statusCode:" + statusCode +
-                        " uri:" + uri + " grantType:" + grantType + " grantTypeValue:" + grantTypeValue +
-                        " authToken:" + authToken,
+                        " uri:" + uri + " grantType: password grant, authToken:" + key,
                         "Retrieving UAT access token failed, Please contact admin.");
             }
         } catch (Exception ex) {
             throw new ServiceException("Exception occurred, when retrieving access token from UAT, " +
-                    " uri:" + uri + " grantType:" + grantType + " grantTypeValue:" + grantTypeValue +
-                    " authToken:" + authToken, "Retrieving UAT access token failed, Please contact admin.", ex);
+                    " uri:" + uri + " grantType:" + grantType + " username:" + username +
+                    " app-key:" + key, "Retrieving UAT access token failed, Please contact admin.", ex);
         }
     }
-
 
     public static boolean deleteUatUpdate(String updateId, String uri, String jwtAssertionValue, String forwardedForValue,
                                           String authorizationValue) {
