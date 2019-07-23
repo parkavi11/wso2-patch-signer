@@ -1,18 +1,14 @@
 package org.wso2.patchvalidator.client;
 
 import java.io.InputStream;
-import java.util.Properties;
-import org.apache.commons.httpclient.util.HttpURLConnection;
-import java.net.URL;
+
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.woden.tool.converter.Convert;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.wso2.patchvalidator.exceptions.ServiceException;
@@ -33,9 +29,13 @@ public class UatClient {
 
     public static JSONObject getUatAccessToken(String grantType, String username, String password, String scope, String key, String uri) {
 
-//        String httpBody = "grant_type=password&username=wum-bot-uat@wso2.com@wso2umuat&password=CmTLMJgk0hBMU&scope=updates_delete";
+        String httpBody =
+                "grantType=" + grantType +
+                "&username=" + username +
+                "&password=" + password +
+                "&scope=" + scope +
+                "&key=" + key + "&uri=" + uri ;
 
-        String httpBody = "grantType=" + grantType + "&username=" + username + "&password=" + password + "&scope=" + scope + "&key=" + key + "&uri=" + uri ;
         JSONParser parser = new JSONParser();
         JSONObject resultObject;
 

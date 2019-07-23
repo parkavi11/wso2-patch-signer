@@ -66,51 +66,6 @@ class UatReverter {
         }
     }
 
-
-//    private static boolean deleteWumDev(String updateId) {
-//
-//        String
-//        = prop.getProperty("wumDevDeleteUrl");
-//        String jwtAssertionValue = getJwtAssertionValue(prop.getProperty("wumJwtAssertValue"));
-//        String forwardedForValue = prop.getProperty("forwardedForValue");
-//
-//        JSONObject devAccessTokenObj;
-//        boolean isUatUpdateDeleted;
-//
-//        try {
-//            devAccessTokenObj = UatClient.getUatAccessToken(prop.getProperty("wumDevAccessTokenUri"),
-//                    prop.getProperty("wumDevGrantType"), prop.getProperty("wumDevGrantTypeValue"),
-//                    prop.getProperty("wumDevAccTokenAuthorization"));
-//        } catch (ServiceException ex) {
-//            throw new ServiceException("Exception occurred, when retrieving access token from WUM DEV. " +
-//                    " wumDevAccessTokenUri:" + prop.getProperty("wumDevAccessTokenUri") +
-//                    " wumDevGrantType:" + prop.getProperty("wumDevGrantType") +
-//                    " wumDevGrantTypeValue:" + prop.getProperty("wumDevGrantTypeValue") +
-//                    " wumDevAccTokenAuthorization:" + prop.getProperty("wumDevAccTokenAuthorization"),
-//                    ex.getDeveloperMessage(), ex);
-//        }
-//        String authorizationValue = devAccessTokenObj.get("token_type") + " " + devAccessTokenObj.get("access_token");
-//
-//        try {
-//            isUatUpdateDeleted = UatClient.deleteUatUpdate(updateId, uri, jwtAssertionValue, forwardedForValue,
-//                    authorizationValue);
-//            if (isUatUpdateDeleted) {
-//                return true;
-//            } else {
-//                throw new ServiceException("Deleting WUM DEV update failed, " + " updateId:" + updateId +
-//                        " uri:" + uri + " jwtAssertionValue:" + jwtAssertionValue + " forwardedForValue:" +
-//                        forwardedForValue + " authorizationValue:" + authorizationValue,
-//                        "Deleting UAT update failed for the update \"" + updateId + "\", " +
-//                                "Please contact admin.");
-//            }
-//        } catch (ServiceException ex) {
-//            throw new ServiceException("Exception occurred when deleting WUM DEV update, " + " updateId:" + updateId +
-//                    " uri:" + uri + " jwtAssertionValue:" + jwtAssertionValue + " forwardedForValue:" +
-//                    forwardedForValue + " authorizationValue:" + authorizationValue, ex.getDeveloperMessage(), ex);
-//        }
-//    }
-
-
     private static boolean deleteWumStg(String updateId) {
 
         String uri = prop.getProperty("wumStgDeleteUrl");
