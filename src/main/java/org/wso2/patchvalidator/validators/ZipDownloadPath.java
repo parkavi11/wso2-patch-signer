@@ -23,12 +23,7 @@ import org.wso2.patchvalidator.util.LogBuilder;
 import org.wso2.patchvalidator.util.PropertyLoader;
 
 /**
- * <h1>Zip Download Path</h1>
- * Define zip file download path and file paths
- *
- * @author Kosala Herath, Senthan Prasanth, Thushanthan
- * @version 1.2
- * @since 2017-12-14
+ * Define zip file download path and file paths.
  */
 class ZipDownloadPath {
 

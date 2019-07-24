@@ -6,15 +6,9 @@ import org.wso2.patchvalidator.service.SyncService;
 import java.util.Properties;
 
 /**
- * <h1>Property loader</h1>
  * Create singleton instance for Properties.
  * Load property file
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-10-06
  */
-
 public class PropertyLoader {
 
     private static PropertyLoader single_instance = null;

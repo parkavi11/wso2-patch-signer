@@ -6,14 +6,8 @@ import java.sql.SQLException;
 import java.util.Map;
 
 /**
- * <h1>Common Database Handler</h1>
  * Interface for Database Handling.
- *
- * @author Kosala Herath, Pramodya Mendis
- * @version 1.3
- * @since 2018-12-14
  */
-
 public interface CommonDatabaseHandler {
 
     int getProductType(String product) throws SQLException;

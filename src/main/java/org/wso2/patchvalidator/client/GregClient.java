@@ -35,17 +35,12 @@ import org.wso2.patchvalidator.service.SyncService;
 
 import java.io.File;
 import java.util.*;
+
 import org.wso2.patchvalidator.util.PropertyLoader;
 
 /**
- * <h1>GREG Client</h1>
  * Client for accessing PMT governance registry.
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-07-12
  */
-
 public class GregClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(SyncService.class);
@@ -53,19 +48,18 @@ public class GregClient {
 
     private static Properties prop = PropertyLoader.getInstance().prop;
 
-    static String CARBON_HOME = "";
-    static String username = "";
-    static String password = "";
-    static String  serverURL = "";
-
+    private static String CARBON_HOME = "";
+    private static String username = "";
+    private static String password = "";
+    private static String serverURL = "";
 
     private static WSRegistryServiceClient initialize() throws Exception {
 
         CARBON_HOME = prop.getProperty("gregCarbonHome");
-        final String axis2Repo = CARBON_HOME + File.separator + "repository" +
-                File.separator + "deployment" + File.separator + "client";
-        final String axis2Conf =
-                ServerConfiguration.getInstance().getFirstProperty("Axis2Config.clientAxis2XmlLocation");
+        final String axis2Repo =
+                CARBON_HOME + File.separator + "repository" + File.separator + "deployment" + File.separator + "client";
+        final String axis2Conf = ServerConfiguration.getInstance()
+                .getFirstProperty("Axis2Config.clientAxis2XmlLocation");
         username = prop.getProperty("gregUserName");
         password = prop.getProperty("gregPassword");
         serverURL = prop.getProperty("gregServerUri");
@@ -75,12 +69,10 @@ public class GregClient {
         System.setProperty("javax.net.ssl.trustStoreType", "JKS");
         System.setProperty("carbon.repo.write.mode", "true");
 
-        configContext = ConfigurationContextFactory.createConfigurationContextFromFileSystem(
-                axis2Repo, axis2Conf);
+        configContext = ConfigurationContextFactory.createConfigurationContextFromFileSystem(axis2Repo, axis2Conf);
         return new WSRegistryServiceClient(serverURL, username, password, configContext);
 
     }
-
 
     public static ArrayList<String> search() throws Exception {
 
@@ -89,21 +81,25 @@ public class GregClient {
 
             final Registry registry = initialize();
             Registry gov = GovernanceUtils.getGovernanceUserRegistry(registry, "admin");
+
             // Should be load the governance artifact.
             GovernanceUtils.loadGovernanceArtifacts((UserRegistry) gov,
                     GovernanceUtils.findGovernanceArtifactConfigurations(gov));
+
             //Initialize the pagination context.
             //Top five services, sortBy name , and sort order descending.
             PaginationContext.init(0, 5, "DES", "overview_name", 100);
-            WSRegistrySearchClient wsRegistrySearchClient =
-                    new WSRegistrySearchClient(serverURL, username, password, configContext);
+            WSRegistrySearchClient wsRegistrySearchClient = new WSRegistrySearchClient(serverURL, username, password,
+                    configContext);
+
             //This should be execute to initialize the AttributeSearchService.
             wsRegistrySearchClient.init();
+
             //Initialize the GenericArtifactManager
-            GenericArtifactManager artifactManager =
-                    new GenericArtifactManager(gov, "patch");
-            Map<String, List<String>> listMap = new HashMap<String, List<String>>();
-            // Create the search attribute map
+            GenericArtifactManager artifactManager = new GenericArtifactManager(gov, "patch");
+            Map<String, List<String>> listMap = new HashMap<>();
+
+            //Create the search attribute map
             listMap.put("lcName", new ArrayList<String>() {
                 {
                     add("PatchLifeCycle");
@@ -114,14 +110,14 @@ public class GregClient {
                     add("ReadyToSign");
                 }
             });
+
             //Find the results.
             GenericArtifact[] genericArtifacts = artifactManager.findGenericArtifacts(listMap);
-            if (genericArtifacts.length == 0) {
-//                LOG.info("There is no patches for Ready to Sign ");
-            }
+
             for (GenericArtifact artifact : genericArtifacts) {
                 list.add(artifact.getPath());
-            } if(genericArtifacts.length != 0){
+            }
+            if (genericArtifacts.length != 0) {
                 LOG.info("Patches to be signed:" + list);
             }
 

@@ -27,12 +27,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 /**
- * <h1>Email Sender</h1>
  * Send email to developer and user with the results of validation.
- *
- * @author Kosala Herath, Senthan Prasanth, Pramodya Mendis
- * @version 1.3
- * @since 2017-12-14
  */
 public class EmailSender {
 

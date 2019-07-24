@@ -39,12 +39,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * <h1>PMT Database Access</h1>
  * Read data from PMT database about product details.
- *
- * @author Kosala Herath, Senthan Prasanth, Thushanathan, Pramodya Mendis
- * @version 1.2
- * @since 2017-12-14
  */
 public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
 

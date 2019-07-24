@@ -8,23 +8,15 @@ import org.wso2.patchvalidator.exceptions.ServiceException;
 import org.wso2.patchvalidator.util.PropertyLoader;
 
 /**
- * <h1>UAT Reverter</h1>
  * Revert WUM UAT database when reverting patch.
  * Delete WUM staging rows related to patch
  * Delete WUM UAT rows related to patch
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-07-12
  */
-
 class UatReverter {
-
 
     private static Properties prop = PropertyLoader.getInstance().prop;
 
-
-    boolean revertUat(String patchId) { //1.stg 2.uat => Nishadi, dev:just for testing
+    boolean revertUat(String patchId) {
 
         boolean isWumDevReverted;
         boolean isWumStgReverted;

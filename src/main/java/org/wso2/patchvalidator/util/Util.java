@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.wso2.patchvalidator.client.PmtClient;
@@ -17,19 +18,16 @@ import java.util.*;
 import static org.wso2.patchvalidator.validators.PatchZipValidator.extractFile;
 
 /**
- * <h1>Util</h1>
  * Common helper methods for the service.
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-10-06
  */
-
 public class Util {
 
-
-    //convert http stream to string
-    @SuppressWarnings("ThrowFromFinallyBlock")
+    /**
+     * Convert http stream to string.
+     *
+     * @param is input stream
+     * @return input stream string
+     */
     public static String convertStreamToString(InputStream is) {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -54,8 +52,12 @@ public class Util {
         return sb.toString();
     }
 
-
-    //create list from json array
+    /**
+     * Create list from json array.
+     *
+     * @param arr json array
+     * @return list of strings
+     */
     public static List<String> createListFromJsonArray(JSONArray arr) {
 
         List<String> list = new ArrayList<>();
@@ -67,11 +69,15 @@ public class Util {
         return list;
     }
 
-
-    //get all kernel products list from db.
-    //productNameArray is the products array taken from patch info, this may contain wso2 products & kernel products.
-    //will return wso2 products only, by taking all wso2 products for kernel products and add them with wso2 products
-    //      in the productNameArray.
+    /**
+     * Get all kernel products list from db.
+     * productNameArray is the products array taken from patch info, this may contain wso2 products & kernel products.
+     * will return wso2 products only, by taking all wso2 products for kernel products and add them with wso2 products
+     * in the productNameArray.
+     *
+     * @param productNameArray array of names products & kernel products
+     * @return array of product names
+     */
     public static String[] getProductList(String[] productNameArray) {
 
         PatchRequestDatabaseHandler patchRequestDatabaseHandler = new PatchRequestDatabaseHandler();
@@ -93,10 +99,11 @@ public class Util {
                 try {
                     tempArr = patchRequestDatabaseHandler.getProductsByKernalVersion(versions);
                 } catch (SQLException ex) {
-                    throw new ServiceException("SQL exception occurred when retrieving products by kernel version,"
-                            + " productName: " + productName,
-                            "Cannot get products by kernel version \"" + productName + "\", Please contact admin " +
-                                    "and update the database.", ex);
+                    throw new ServiceException(
+                            "SQL exception occurred when retrieving products by kernel version," + " productName: "
+                                    + productName,
+                            "Cannot get products by kernel version \"" + productName + "\", Please contact admin "
+                                    + "and update the database.", ex);
                 }
                 //remove carbon product from the retrieved products list and add all other products
                 kernelProduct.addAll(removeCarbonProductFromList(tempArr));
@@ -107,8 +114,8 @@ public class Util {
                 } catch (SQLException ex) {
                     throw new ServiceException("SQL exception occurred when retrieving product abbreviation by product"
                             + " name & version, name:" + name + " version:" + versions,
-                            "Cannot get product abbreviation for the product \"" + name + "-" + versions + "," +
-                                    " Please contact admin and update the database.", ex);
+                            "Cannot get product abbreviation for the product \"" + name + "-" + versions + ","
+                                    + " Please contact admin and update the database.", ex);
                 }
                 kernelProduct.add(productAdd);
             }
@@ -137,14 +144,24 @@ public class Util {
         return list;
     }
 
-
-    //check two lists contain same elements, ignore order
+    /**
+     * Check two lists contain same elements, ignore order.
+     *
+     * @param list1 list one
+     * @param list2 list two
+     * @return whether both lists contain same elements without considering the order.
+     */
     public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
         return new HashSet<>(list1).equals(new HashSet<>(list2));
     }
 
-
-    //get patch type using product details table
+    /**
+     * Get patch type using product details table.
+     *
+     * @param patchId patch ID
+     * @param version kernel version
+     * @return type of the patch (Patch, Update or Patch&Update)
+     */
     public static PatchType getPatchType(String patchId, String version) {
 
         try {
@@ -166,8 +183,8 @@ public class Util {
             }
 
             if (productsList.size() < 1) {
-                throw new ServiceException("products list is empty", "Invalid patch information, " +
-                        "products list is empty. Please amend and re-submit.");
+                throw new ServiceException("products list is empty",
+                        "Invalid patch information, " + "products list is empty. Please amend and re-submit.");
             }
 
             //convert product array list to an array
@@ -191,8 +208,9 @@ public class Util {
                 else if (productType == 3)
                     return PatchType.PATCH_AND_UPDATE;
                 else
-                    throw new ServiceException("cannot get the patch type of the patch from the database, patch:" +
-                            version + "-" + patchId + " product:" + product,
+                    throw new ServiceException(
+                            "cannot get the patch type of the patch from the database, patch:" + version + "-" + patchId
+                                    + " product:" + product,
                             "Patch type is empty for the product \"" + product + "\" Please contact admin.");
             }
 
@@ -203,14 +221,14 @@ public class Util {
             else if (isUpdate)
                 return PatchType.UPDATE;
             else
-                throw new ServiceException("cannot get the patch type of the patch from the database, patch:" +
-                        version + "-" + patchId,
-                        "Cannot get the patch type for the product list \"" + Arrays.toString(fullProductsList) +
-                                "\" Please contact admin.");
+                throw new ServiceException(
+                        "cannot get the patch type of the patch from the database, patch:" + version + "-" + patchId,
+                        "Cannot get the patch type for the product list \"" + Arrays.toString(fullProductsList)
+                                + "\" Please contact admin.");
         } catch (Exception ex) {
             throw new ServiceException("retrieving patch type failed for the patch:" + version + "-" + patchId,
-                    "retrieving patch type failed for the patch \"" + version + "-" + patchId + "\", " +
-                            "Please contact admin.", ex);
+                    "retrieving patch type failed for the patch \"" + version + "-" + patchId + "\", "
+                            + "Please contact admin.", ex);
         }
     }
 

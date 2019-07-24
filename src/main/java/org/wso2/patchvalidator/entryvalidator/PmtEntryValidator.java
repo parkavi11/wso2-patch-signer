@@ -18,7 +18,6 @@
 
 package org.wso2.patchvalidator.entryvalidator;
 
-
 import java.util.*;
 
 import org.wso2.patchvalidator.exceptions.ServiceException;
@@ -27,17 +26,9 @@ import org.wso2.patchvalidator.store.PatchRequestDatabaseHandler;
 import java.sql.SQLException;
 
 /**
- * <h1>PMT Entry Validator</h1>
  * Validate the PMT patch information entry.
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-07-12
  */
-
-@SuppressWarnings("ALL")
 public class PmtEntryValidator {
-
 
     public boolean validatePmtEntry(PatchInfo patchInfo) {
 
@@ -49,7 +40,7 @@ public class PmtEntryValidator {
             //get Wum product JSON object <- base64
             WumProductsInfo wumProductsInfo = new WumProductsInfo();
             String base64WumProductsJson = patchInfo.getWumProductsJSON();
-            WumProductsInfo wumProductsInfoObj = wumProductsInfo.
+            WumProductsInfo wumProductsInfoObj = WumProductsInfo.
                     createWumProductsInfoObjectFromBase64(base64WumProductsJson);
 
             //1. overview_compatibleProducts validation
@@ -58,12 +49,11 @@ public class PmtEntryValidator {
             isValidOverviewProducts = validateOverviewProducts(patchInfo, wumProductsInfo);
             //3. patchInformation_jarsInvolved validation
             isValidPatchInformationJarsInvolved = validatePatchInformationJarsInvolved(patchInfo, wumProductsInfo);
-        } catch (ServiceException ex){
-            throw new ServiceException("Exception occured when validationg pmt entry", ex.getDeveloperMessage(), ex);
+        } catch (ServiceException ex) {
+            throw new ServiceException("Exception occurred when validating pmt entry", ex.getDeveloperMessage(), ex);
         }
         return isValidOverviewCompatibleProducts && isValidOverviewProducts && isValidPatchInformationJarsInvolved;
     }
-
 
     private static boolean validateOverviewCompatibleProducts(PatchInfo pmtRes, WumProductsInfo wumRes) {
 
@@ -74,8 +64,9 @@ public class PmtEntryValidator {
             boolean isValid = checkAllWumProductsIsInPmtProducts(wumCompProducts, pmtCompProducts);
             return isValid;
         } catch (ServiceException ex) {
-            throw new ServiceException("Exception occurred when validating compatible products," +
-                    "wumCompProducts:" + wumCompProducts + " pmtCompProducts:" + pmtCompProducts,
+            throw new ServiceException(
+                    "Exception occurred when validating compatible products," + "wumCompProducts:" + wumCompProducts
+                            + " pmtCompProducts:" + pmtCompProducts,
                     ex.getDeveloperMessage() + " \"Compatible products\"", ex);
         }
     }
@@ -92,15 +83,16 @@ public class PmtEntryValidator {
         try {
             isCompValid = checkAllWumProductsIsInPmtProducts(wumCompatibleProducts, pmtProducts);
         } catch (ServiceException ex) {
-            throw new ServiceException("Exception occurred when validating overview products: compatible products," +
-                    "wumCompatibleProducts:" + wumCompatibleProducts + " pmtProducts:" + pmtProducts,
+            throw new ServiceException("Exception occurred when validating overview products: compatible products,"
+                    + "wumCompatibleProducts:" + wumCompatibleProducts + " pmtProducts:" + pmtProducts,
                     ex.getDeveloperMessage() + " \"Products\"", ex);
         }
         try {
             isPartValid = checkAllWumProductsIsInPmtProducts(wumPartialProducts, pmtProducts);
         } catch (ServiceException ex) {
-            throw new ServiceException("Exception occurred when validating overview products: partial products," +
-                    "wumCompatibleProducts:" + wumPartialProducts + " pmtProducts:" + pmtProducts,
+            throw new ServiceException(
+                    "Exception occurred when validating overview products: partial products," + "wumCompatibleProducts:"
+                            + wumPartialProducts + " pmtProducts:" + pmtProducts,
                     ex.getDeveloperMessage() + " \"Products\"", ex);
         }
         return (isCompValid && isPartValid);
@@ -118,28 +110,33 @@ public class PmtEntryValidator {
             try {
                 boolean isAddedFilesValid = checkPatchInfoJarsContainsAllWumProductsJsonFiles(pmtJars, addedFiles);
             } catch (ServiceException ex) {
-                throw new ServiceException("Exception occurred when validating patch information jars involved:" +
-                        " added files,", ex.getDeveloperMessage(), ex);
+                throw new ServiceException(
+                        "Exception occurred when validating patch information jars involved:" + " added files,",
+                        ex.getDeveloperMessage(), ex);
             }
             try {
-                boolean isModifiedFilesValid = checkPatchInfoJarsContainsAllWumProductsJsonFiles(pmtJars, modifiedFiles);
+                boolean isModifiedFilesValid = checkPatchInfoJarsContainsAllWumProductsJsonFiles(pmtJars,
+                        modifiedFiles);
             } catch (ServiceException ex) {
-                throw new ServiceException("Exception occurred when validating patch information jars involved:" +
-                        " modified files,", ex.getDeveloperMessage(), ex);
+                throw new ServiceException(
+                        "Exception occurred when validating patch information jars involved:" + " modified files,",
+                        ex.getDeveloperMessage(), ex);
             }
             try {
                 boolean isRemovedFilesValid = checkPatchInfoJarsContainsAllWumProductsJsonFiles(pmtJars, removedFiles);
             } catch (ServiceException ex) {
-                throw new ServiceException("Exception occurred when validating patch information jars involved:" +
-                        " removed files,", ex.getDeveloperMessage(), ex);
+                throw new ServiceException(
+                        "Exception occurred when validating patch information jars involved:" + " removed files,",
+                        ex.getDeveloperMessage(), ex);
             }
         }
         return true;
     }
 
-    //check all the products in the wumProducts is in the pmtProducts
-    private static boolean checkAllWumProductsIsInPmtProducts(List<WumProduct> wumProducts,
-                                                              List<String> pmtProducts) {
+    /**
+     * check all the products in the wumProducts is in the pmtProducts
+     */
+    private static boolean checkAllWumProductsIsInPmtProducts(List<WumProduct> wumProducts, List<String> pmtProducts) {
 
         for (WumProduct wumProduct : wumProducts) {
 
@@ -151,39 +148,41 @@ public class PmtEntryValidator {
             try {
                 res = db.getProductDetails(wumProductAbbr);
             } catch (SQLException ex) {
-                throw new ServiceException("SQL exception occurred when retrieving product name and version" +
-                        "using product abbreviation, productAbbreviation:" + wumProductAbbr,
-                        "Cannot retrieve product name and version using abbreviation from database, Please" +
-                                "contact admin.", ex);
+                throw new ServiceException("SQL exception occurred when retrieving product name and version"
+                        + "using product abbreviation, productAbbreviation:" + wumProductAbbr,
+                        "Cannot retrieve product name and version using abbreviation from database, Please"
+                                + "contact admin.", ex);
             }
 
             //check product is in the PMT compatible products
             String product = res.get("productName") + " " + res.get("productVersion");
             if (!pmtProducts.contains(product)) {
-                throw new ServiceException("Exception occurred, This item not in the pmt patch json," +
-                        "item:" + product + " wumList:" + wumProducts + " pmtList:" + pmtProducts,
-                        "Product \"" + product + "\" is not in the products list, Please amend and " +
-                                "re-submit.");
+                throw new ServiceException(
+                        "Exception occurred, This item not in the pmt patch json," + "item:" + product + " wumList:"
+                                + wumProducts + " pmtList:" + pmtProducts,
+                        "Product \"" + product + "\" is not in the products list, Please amend and " + "re-submit.");
             }
         }
         return true;
     }
 
-
-    //check patch information jars involved files contains all wum products json files (3 types)
-    private static boolean checkPatchInfoJarsContainsAllWumProductsJsonFiles
-    (List<String> patchInfoJarsInvolved, List<String> wumProductsJsonFiles) {
+    /**
+     * check patch information jars involved files contains all wum products json files (3 types)
+     */
+    private static boolean checkPatchInfoJarsContainsAllWumProductsJsonFiles(List<String> patchInfoJarsInvolved,
+            List<String> wumProductsJsonFiles) {
 
         if (wumProductsJsonFiles.size() > 0) {
             for (String element : wumProductsJsonFiles) {
                 String[] tmp = element.split("/");
                 String fileName = tmp[tmp.length - 1].trim();
                 if (!patchInfoJarsInvolved.contains(fileName)) {
-                    throw new ServiceException("Exception occurred, This file not contains in patch information " +
-                            "jars involved, file:" + fileName + " patchInformation_jarsInvolved:"
-                            + patchInfoJarsInvolved + "wumProductsJsonFileList:" + wumProductsJsonFiles,
-                            "\"" + fileName + "\" JAR is not in the JARs involved list, " +
-                                    "Please amend and re-submit.");
+                    throw new ServiceException(
+                            "Exception occurred, This file not contains in patch information " + "jars involved, file:"
+                                    + fileName + " patchInformation_jarsInvolved:" + patchInfoJarsInvolved
+                                    + "wumProductsJsonFileList:" + wumProductsJsonFiles,
+                            "\"" + fileName + "\" JAR is not in the JARs involved list, "
+                                    + "Please amend and re-submit.");
                 }
             }
         }
