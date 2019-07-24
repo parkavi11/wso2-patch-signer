@@ -23,12 +23,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 /**
- * <h1>Common Validator</h1>
  * Interface for Validating.
- *
- * @author Kosala Herath
- * @version 1.3
- * @since 2018-12-14
  */
 public interface CommonValidator {
 

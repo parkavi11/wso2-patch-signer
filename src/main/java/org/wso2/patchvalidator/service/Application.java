@@ -24,18 +24,8 @@ import org.wso2.msf4j.MicroservicesRunner;
 import org.wso2.patchvalidator.authentication.UsernamePasswordSecurityInterceptor;
 
 /**
- * <h1>Auto Patch and Update Signer Microservice</h1>
- * The Auto Patch and update Signer implements an micro service that
- * validate,sign and revert wso2 patches and updates automatically.
- * <p>
- * This microservice listen requests from Auto Patch Signer
- * Application on wso2 internal app store.
- * Finally generate commit and lock keys for each patch and
- * update and send email to developer.
- *
- * @author Kosala Herath,Senthan Praanth
- * @version 1.2
- * @since 2017-12-14
+ * The Auto Patch and update Signer implements an micro service that validate, sign and revert wso2 patches and updates
+ * automatically. Finally generate commit and lock keys for each patch and update and send email to developer.
  */
 public class Application {
 

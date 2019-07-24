@@ -36,12 +36,7 @@ import java.util.Properties;
 import static org.wso2.patchvalidator.constants.Constants.*;
 
 /**
- * <h1>Patch Validator</h1>
  * Validate patches considering all the file structure and content.
- *
- * @author Kosala Herath, Senthan Prasanth, Thushanthan
- * @version 1.2
- * @since 2017-12-14
  */
 public class PatchValidator {
 
@@ -148,8 +143,6 @@ public class PatchValidator {
             LOG.error("Patch validation failed: " + developerMessage);
             return developerMessage.toString();
         }
-
     }
-
 }
 

@@ -9,23 +9,14 @@ import org.wso2.patchvalidator.util.LogBuilder;
 import org.wso2.patchvalidator.util.PropertyLoader;
 
 /**
- * <h1>SVN reverter</h1>
  * Revert SVN when reverting patch.
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-07-12
  */
-
-@SuppressWarnings("ALL")
-public class SvnReverter {
-
+class SvnReverter {
 
     private static Properties prop = PropertyLoader.getInstance().prop;
     private static org.slf4j.Logger LOG = LogBuilder.getInstance().LOG;
 
-
-    public static boolean revertSvn(String patchId, String version, PatchType patchType) {
+    static boolean revertSvn(String patchId, String version, PatchType patchType) {
 
         version = prop.getProperty(version);
         boolean isSvnPatchRevertSuccess = false;

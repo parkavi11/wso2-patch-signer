@@ -40,12 +40,7 @@ import static org.wso2.patchvalidator.constants.Constants.SUCCESS_MESSAGE;
 import static org.wso2.patchvalidator.service.Signer.sign;
 
 /**
- * <h1>SyncServices</h1>
  * All the endpoints in the microservice is defined here.
- *
- * @author Kosala Herath, Senthan Praanth, Pramodya Mendis, Thushanthan Amalanathan
- * @version 1.2
- * @since 2017-12-14
  */
 //@Path("/patch-validator")
 @Path("/request")

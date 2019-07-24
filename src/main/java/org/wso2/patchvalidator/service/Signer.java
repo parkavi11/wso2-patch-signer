@@ -27,10 +27,7 @@ import static org.wso2.patchvalidator.constants.Constants.*;
 import static org.wso2.patchvalidator.validators.EmailSender.setCCList;
 
 /**
- * <h1>Signer</h1>
  * Patch signing process handled by this class.
- *
- * @author Kosala Herath, Senthan Praanth, Pramodya Mendis
  */
 class Signer {
 

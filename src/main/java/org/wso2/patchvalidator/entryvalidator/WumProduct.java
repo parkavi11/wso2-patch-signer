@@ -21,14 +21,8 @@ package org.wso2.patchvalidator.entryvalidator;
 import java.util.List;
 
 /**
- * <h1>Wum Product</h1>
  * Create object for each product, of wumProducts info products lists (compatible-products etc).
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-07-12
  */
-
 class WumProduct {
 
     private String productName;

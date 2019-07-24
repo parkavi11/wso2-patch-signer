@@ -4,14 +4,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * <h1>Service Exception</h1>
  * Custom exception for the service to handle exceptions.
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-07-12
  */
-
 public class ServiceException extends RuntimeException {
 
     private static Pattern REPLACE_PATTERN = Pattern.compile("\\{\\}");

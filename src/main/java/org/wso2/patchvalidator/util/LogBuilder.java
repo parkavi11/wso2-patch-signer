@@ -6,16 +6,9 @@ import org.wso2.patchvalidator.exceptions.ServiceException;
 import org.wso2.patchvalidator.service.SyncService;
 
 /**
- * <h1>Log Builder</h1>
  * Create singleton instance for Logger.
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-10-06
  */
-
 public class LogBuilder {
-
 
     private static LogBuilder single_instance = null;
     public Logger LOG;
@@ -28,7 +21,6 @@ public class LogBuilder {
             throw new ServiceException("Exception occurred when creating Logger instance. ", ex);
         }
     }
-
 
     public static LogBuilder getInstance() {
 

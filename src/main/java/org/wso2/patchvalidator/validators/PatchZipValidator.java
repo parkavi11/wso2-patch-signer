@@ -42,16 +42,9 @@ import static org.tmatesoft.svn.core.SVNURL.parseURIDecoded;
 import static org.wso2.patchvalidator.client.SvnClient.svnConnection;
 
 /**
- * <h1>Patch Zip Validator</h1>
- * Validate each file in zip file of the patch and return error messages
- * or successful message.
- *
- * @author Kosala Herath,Senthan Prasanth, Thushanthan
- * @version 1.3
- * @since 2017-12-14
+ * Validate each file in zip file of the patch and return error messages or successful message.
  */
 
-@SuppressWarnings({"deprecation", "ResultOfMethodCallIgnored", "MismatchedQueryAndUpdateOfStringBuilder"})
 public class PatchZipValidator implements CommonValidator {
 
     private static final Properties prop = PropertyLoader.getInstance().prop;

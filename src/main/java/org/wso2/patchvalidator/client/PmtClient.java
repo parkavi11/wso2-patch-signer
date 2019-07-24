@@ -22,14 +22,8 @@ import org.wso2.patchvalidator.util.PropertyLoader;
 import static org.wso2.patchvalidator.util.Util.convertStreamToString;
 
 /**
- * <h1>PMT Client</h1>
  * Client for accessing PMT API.
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-07-12
  */
-
 public class PmtClient {
 
 

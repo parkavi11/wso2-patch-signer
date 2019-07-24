@@ -21,12 +21,7 @@ package org.wso2.patchvalidator.validators;
 import org.wso2.patchvalidator.interfaces.CommonValidator;
 
 /**
- * <h1>Patch Validate Factory</h1>
  * get common validator
- *
- * @author Kosala Herath
- * @version 1.3
- * @since 2017-12-14
  */
 public class PatchValidateFactory extends ValidateFactory {
 

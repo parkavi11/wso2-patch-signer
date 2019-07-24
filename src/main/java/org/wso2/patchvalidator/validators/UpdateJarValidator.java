@@ -9,6 +9,9 @@ import org.wso2.patchvalidator.exceptions.ServiceException;
 import org.wso2.patchvalidator.store.PatchRequestDatabaseHandler;
 import org.wso2.patchvalidator.util.Util;
 
+/**
+ * Validate JAR files inside updates. Ensure updated JARs releasing through WUM.
+ */
 class UpdateJarValidator {
 
     enum JAR_TIMESTAMP_TABLE {
@@ -18,11 +21,9 @@ class UpdateJarValidator {
     private static List<File> jarFiles = new ArrayList<>();
 
     /**
-     * validate jar files in a update.
-     * if jar is completely new add it to Master table.
-     * else if jars manifest timestamp is greater then timestamp in the Master table, insert manifest time to Temp and
-     * validate it.
-     * else fails the validation.
+     * Validate jar files in a update.
+     * If jar is completely new add it to Master table. Else if, jars manifest timestamp is greater than timestamp in
+     * the Master table, insert manifest time to Temp and validate it. Else, fails the validation.
      *
      * @param updateFolderPath "/Users/Downloads/WSO2-CARBON-UPDATE-4.4.0-2243"
      * @param updateId         "WSO2-CARBON-UPDATE-4.4.0-2243"
