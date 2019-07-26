@@ -118,7 +118,6 @@ class UatReverter {
         Constants constants = new Constants();
 
         try {
-//            getUatAccessToken(String grantType, String username, String password, String scope, String key, String uri) {
             AccessTokenObj = UatClient.getUatAccessToken(prop.getProperty(Constants.wumUatGrantType),
                     prop.getProperty(Constants.wumUatUsername), prop.getProperty(Constants.wumUatPassword),
                     prop.getProperty(Constants.wumUatScope), prop.getProperty(Constants.wumUatAppKey),
