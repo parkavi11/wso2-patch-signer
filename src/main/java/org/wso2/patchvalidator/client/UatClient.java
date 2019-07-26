@@ -29,12 +29,7 @@ public class UatClient {
 
     public static JSONObject getUatAccessToken(String grantType, String username, String password, String scope, String key, String uri) {
 
-        String httpBody =
-                "grantType=" + grantType +
-                "&username=" + username +
-                "&password=" + password +
-                "&scope=" + scope +
-                "&key=" + key + "&uri=" + uri ;
+        String httpBody = "grantType=" + grantType + "&username=" + username + "&password=" + password + "&scope=" + scope + "&key=" + key + "&uri=" + uri ;
 
         JSONParser parser = new JSONParser();
         JSONObject resultObject;
