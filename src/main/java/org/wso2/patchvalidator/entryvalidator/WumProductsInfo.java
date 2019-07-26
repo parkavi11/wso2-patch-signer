@@ -29,14 +29,8 @@ import java.util.Base64;
 import org.wso2.patchvalidator.exceptions.ServiceException;
 
 /**
- * <h1>Wum Products Info</h1>
  * Create object for Wum products info from products json of patch info (base64 string).
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-07-12
  */
-
 class WumProductsInfo {
 
     private List<WumProduct> compatibleProducts;

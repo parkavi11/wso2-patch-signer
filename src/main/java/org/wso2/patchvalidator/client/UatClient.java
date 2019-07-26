@@ -15,15 +15,9 @@ import org.wso2.patchvalidator.exceptions.ServiceException;
 import org.wso2.patchvalidator.util.Util;
 
 /**
- * <h1>UAT Client</h1>
  * Client for accessing WUM UAT API.
  * Only used for reverting a signed update.
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-07-12
  */
-
 public class UatClient {
 
 

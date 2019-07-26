@@ -9,12 +9,7 @@ import org.wso2.patchvalidator.util.PropertyLoader;
 import static org.wso2.patchvalidator.util.Util.getPatchType;
 
 /**
- * <h1>Reverter</h1>
  * Revert patch.
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-07-12
  */
 
 public class Reverter {

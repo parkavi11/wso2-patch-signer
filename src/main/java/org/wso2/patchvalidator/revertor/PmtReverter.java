@@ -1,27 +1,20 @@
 package org.wso2.patchvalidator.revertor;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.wso2.patchvalidator.client.PmtClient;
 import org.wso2.patchvalidator.enums.PatchType;
 import org.wso2.patchvalidator.enums.ValidationType;
 import org.wso2.patchvalidator.exceptions.ServiceException;
-import org.wso2.patchvalidator.util.PropertyLoader;
 import org.wso2.patchvalidator.util.Util;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
- * <h1>PMT reverter</h1>
  * Revert PMT state when reverting patch.
  * Pre validate and Post validate to check whether particular patch can be reverted in PMT
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-07-12
  */
-
 class PmtReverter {
 
     private static List<String> overviewProducts = Collections.emptyList();

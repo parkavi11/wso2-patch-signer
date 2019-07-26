@@ -25,16 +25,9 @@ import org.wso2.patchvalidator.exceptions.ServiceException;
 import org.wso2.patchvalidator.util.Util;
 
 /**
- * <h1>Patch Info</h1>
  * Create patch information object from PMT Patch Json.
- *
- * @author Pramodya Mendis
- * @version 1.3
- * @since 2018-07-12
  */
-
 public class PatchInfo {
-
 
     private List<String> overviewProducts;
     private List<String> overviewCompatibleProducts;
