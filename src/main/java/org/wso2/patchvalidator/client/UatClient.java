@@ -25,7 +25,7 @@ public class UatClient {
                                                String scope, String key, String uri) {
 
         String httpBody = "grantType=" + grantType + "&username=" + username + "&password=" + password + "&scope=" +
-                scope + "&key=" + key + "&uri=" + uri ;
+                scope + "&key=" + key + "&uri=" + uri;
 
         JSONParser parser = new JSONParser();
         JSONObject resultObject;

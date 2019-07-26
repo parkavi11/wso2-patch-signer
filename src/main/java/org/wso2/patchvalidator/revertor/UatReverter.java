@@ -1,6 +1,7 @@
 package org.wso2.patchvalidator.revertor;
 
 import java.util.Properties;
+
 import org.apache.commons.codec.binary.Base64;
 import org.json.simple.JSONObject;
 import org.wso2.patchvalidator.client.UatClient;
@@ -16,9 +17,9 @@ import org.wso2.patchvalidator.util.PropertyLoader;
 class UatReverter {
 
     private static Properties prop = PropertyLoader.getInstance().prop;
-  
+
     boolean revertUat(String patchId) {
-      
+
         boolean isWumDevReverted;
         boolean isWumStgReverted;
         boolean isWumUatReverted;
@@ -124,14 +125,14 @@ class UatReverter {
                     prop.getProperty(Constants.wumUatAccessTokenUri));
         } catch (ServiceException ex) {
             throw new ServiceException("Exception occurred, when retrieving access token from WUM UAT. " +
-                    " wumUatAccessTokenUri:" + constants.wumUatAccessTokenUri +
-                    " wumUatGrantType:" + constants.wumUatGrantType +
-                    " wumUatGrantTypeValue:" + constants.wumUatGrantTypeValue +
+                    " wumUatAccessTokenUri:" + Constants.wumUatAccessTokenUri +
+                    " wumUatGrantType:" + Constants.wumUatGrantType +
+                    " wumUatGrantTypeValue:" + Constants.wumUatGrantTypeValue +
                     " wumUatAccTokenAuthorization:" + prop.getProperty("wumUatAccTokenAuthorization") +
-                    " wumUatAppKey:" + constants.wumUatAppKey +
-                    " wumUatUsername:" + constants.wumUatUsername +
-                    " wumUatScope:" + constants.wumUatScope +
-                    " wumUatPassword:" + constants.wumUatPassword,
+                    " wumUatAppKey:" + Constants.wumUatAppKey +
+                    " wumUatUsername:" + Constants.wumUatUsername +
+                    " wumUatScope:" + Constants.wumUatScope +
+                    " wumUatPassword:" + Constants.wumUatPassword,
                     ex.getDeveloperMessage(), ex);
         }
         String authorizationValue = AccessTokenObj.get("token_type") + " " + AccessTokenObj.get("access_token");
