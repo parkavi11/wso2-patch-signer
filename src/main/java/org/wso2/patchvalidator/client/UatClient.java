@@ -65,8 +65,7 @@ public class UatClient {
     }
 
     public static boolean deleteUatUpdate(String updateId, String uri, String jwtAssertionValue,
-                                          String forwardedForValue,
-                                          String authorizationValue) {
+                                          String forwardedForValue, String authorizationValue) {
 
         uri = uri + updateId;
 
