@@ -44,6 +44,7 @@ public final class Constants {
     public static final String ENTRY_VALIDATION_SUCCESSFUL = "PMT Entry validation finished successfully";
     //PMT update constants
     public static final String PMT_UPDATE_ADMIN_STG_SUCCESSFUL = " PMT LC state updated to \"Admin staging\" state.";
+    public static final String PMT_UPDATE_UAT_STG_SUCCESSFUL = " PMT LC state updated to \"UAT staging\" state.";
     public static final String PMT_UPDATE_TESTING_SUCCESSFUL = " PMT LC state updated to \"Testing\" state.";
     public static final String PMT_UPDATE_RELEASED_SUCCESSFUL = " PMT LC state updated to \"Released\" state.";
     public static final String PMT_UPDATE_RELEASED_NOT_AUTOMATED_SUCCESSFUL = " PMT LC state updated to \"Released not"
