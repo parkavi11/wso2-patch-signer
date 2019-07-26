@@ -4,6 +4,7 @@ import java.util.Properties;
 import org.apache.commons.codec.binary.Base64;
 import org.json.simple.JSONObject;
 import org.wso2.patchvalidator.client.UatClient;
+import org.wso2.patchvalidator.constants.Constants;
 import org.wso2.patchvalidator.exceptions.ServiceException;
 import org.wso2.patchvalidator.util.PropertyLoader;
 
@@ -22,7 +23,6 @@ class UatReverter {
 
 
     private static Properties prop = PropertyLoader.getInstance().prop;
-
 
     boolean revertUat(String patchId) { //1.stg 2.uat => Nishadi, dev:just for testing
 
@@ -76,9 +76,9 @@ class UatReverter {
         boolean isUatUpdateDeleted;
 
         try {
-            AccessTokenObj = UatClient.getUatAccessToken(prop.getProperty("wumUatGrantType"),
-                    prop.getProperty("wumUatUsername"), prop.getProperty("wumUatPassword"),
-                    prop.getProperty("wumUatScope"), prop.getProperty("wumUatAppKey"), prop.getProperty("wumUatAccessTokenUri"));
+            AccessTokenObj = UatClient.getUatAccessToken(Constants.wumUatGrantType,
+                    Constants.wumUatUsername, Constants.wumUatPassword,
+                    Constants.wumUatScope, Constants.wumUatAppKey, Constants.wumUatAccessTokenUri);
         } catch (ServiceException ex) {
             throw new ServiceException("Exception occurred, when retrieving access token from WUM Stg. " +
                     " wumStgAccessTokenUri:" + prop.getProperty("wumStgAccessTokenUri") +
@@ -121,21 +121,24 @@ class UatReverter {
         JSONObject AccessTokenObj;
         boolean isUatUpdateDeleted;
 
+        Constants constants = new Constants();
+
         try {
 //            getUatAccessToken(String grantType, String username, String password, String scope, String key, String uri) {
-            AccessTokenObj = UatClient.getUatAccessToken(prop.getProperty("wumUatGrantType"),
-                    prop.getProperty("wumUatUsername"), prop.getProperty("wumUatPassword"),
-                    prop.getProperty("wumUatScope"), prop.getProperty("wumUatAppKey"), prop.getProperty("wumUatAccessTokenUri"));
+            AccessTokenObj = UatClient.getUatAccessToken(prop.getProperty(Constants.wumUatGrantType),
+                    prop.getProperty(Constants.wumUatUsername), prop.getProperty(Constants.wumUatPassword),
+                    prop.getProperty(Constants.wumUatScope), prop.getProperty(Constants.wumUatAppKey),
+                    prop.getProperty(Constants.wumUatAccessTokenUri));
         } catch (ServiceException ex) {
             throw new ServiceException("Exception occurred, when retrieving access token from WUM UAT. " +
-                    " wumUatAccessTokenUri:" + prop.getProperty("wumUatAccessTokenUri") +
-                    " wumUatGrantType:" + prop.getProperty("wumUatGrantType") +
-                    " wumUatGrantTypeValue:" + prop.getProperty("wumUatGrantTypeValue") +
+                    " wumUatAccessTokenUri:" + constants.wumUatAccessTokenUri +
+                    " wumUatGrantType:" + constants.wumUatGrantType +
+                    " wumUatGrantTypeValue:" + constants.wumUatGrantTypeValue +
                     " wumUatAccTokenAuthorization:" + prop.getProperty("wumUatAccTokenAuthorization") +
-                    " wumUatAppKey:" + prop.getProperty("wumUatAppKey") +
-                    " wumUatUsername:" + prop.getProperty("wumUatUsername") +
-                    " wumUatScope:" + prop.getProperty("wumUatScope") +
-                    " wumUatPassword:" + prop.getProperty("wumUatPassword"),
+                    " wumUatAppKey:" + constants.wumUatAppKey +
+                    " wumUatUsername:" + constants.wumUatUsername +
+                    " wumUatScope:" + constants.wumUatScope +
+                    " wumUatPassword:" + constants.wumUatPassword,
                     ex.getDeveloperMessage(), ex);
         }
         String authorizationValue = AccessTokenObj.get("token_type") + " " + AccessTokenObj.get("access_token");
