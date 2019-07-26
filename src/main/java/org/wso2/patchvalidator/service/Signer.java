@@ -38,6 +38,7 @@ class Signer {
     private static final String readyToSignState = prop.getProperty("pmtLcReadyToSignState");
     private static final String adminStgState = prop.getProperty("pmtLcAdminStgState");
     private static final String commitUrlSplitter = prop.getProperty("commitUrlSpliter");
+    private static final String uatStgState = prop.getProperty("pmtLcUATStgState");
 
     /**
      * Signing patches to be signed.
@@ -455,14 +456,14 @@ class Signer {
                 (objUpdateValidator.updateUrl.split(commitUrlSplitter)[1]),
                 objUpdateValidator.updateDestination, patchId, version, prop.getProperty("update"));
 
-        //if successful, update PMT to AdminStaging
+        //if successful, update PMT to UAT Staging state
         if (updateValidateStatus.contains(Constants.UPDATE_VALIDATED) &&
                 updateValidateStatus.contains(Constants.SUCCESSFULLY_KEY_COMMITTED)) {
-            //update PMT to `AdminStaging`
-            pmtUpdateStatus = updatePmtLcState(patchId, version, adminStgState);
+            //update PMT to `UATStaging`
+            pmtUpdateStatus = updatePmtLcState(patchId, version, uatStgState);
             developerMessage = updateValidateStatus.replace(WUM_UC_SUCCESS_MESSAGE, "")
                     + pmtUpdateStatus;
-            patchRequestDatabaseHandler.insertDataToErrorLog(patchName, adminStgState, developerMessage, SUCCESS_MESSAGE);
+            patchRequestDatabaseHandler.insertDataToErrorLog(patchName, uatStgState, developerMessage, SUCCESS_MESSAGE);
         } else {
             //update PMT to `Testing`
             pmtUpdateStatus = updatePmtLcState(patchId, version, testingState);
@@ -526,12 +527,12 @@ class Signer {
         //if successful, update PMT to Signed
         if (updateValidateStatus.contains(Constants.UPDATE_VALIDATED) &&
                 updateValidateStatus.contains(Constants.SUCCESSFULLY_KEY_COMMITTED)) {
-            //update PMT to `AdminStaging`
-            pmtUpdateStatus = updatePmtLcState(patchId, version, adminStgState);
+            //update PMT to `UATStaging`
+            pmtUpdateStatus = updatePmtLcState(patchId, version, uatStgState);
             developerMessage = patchValidateStatus +
                     updateValidateStatus.replace(WUM_UC_SUCCESS_MESSAGE, "") +
                     pmtUpdateStatus;
-            patchRequestDatabaseHandler.insertDataToErrorLog(patchName, adminStgState, developerMessage,
+            patchRequestDatabaseHandler.insertDataToErrorLog(patchName, uatStgState, developerMessage,
                     SUCCESS_MESSAGE);
         } else {
             //update PMT to `Testing`

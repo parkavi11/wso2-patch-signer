@@ -120,6 +120,7 @@ public class EmailSender {
         toList.add(developedBy);
         ccList.add(prop.getProperty("ccList1"));
         ccList.add(prop.getProperty("ccList2"));
+        ccList.add(prop.getProperty("ccList3"));
 
     }
 }

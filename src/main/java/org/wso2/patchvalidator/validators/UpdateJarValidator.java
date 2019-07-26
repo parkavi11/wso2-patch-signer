@@ -45,7 +45,7 @@ class UpdateJarValidator {
 
             if (dbTimestamp.equals("")) { // jar is not in the db
                 newJars.put(jarFileName, String.valueOf(jarTimestamp));
-            } else if (Long.parseLong(dbTimestamp) < jarTimestamp) { // jar timestamp greater then db timestamp
+            } else if (Long.parseLong(dbTimestamp) <= jarTimestamp) { // jar timestamp greater then db timestamp
                 updatedJars.put(jarFileName, String.valueOf(jarTimestamp));
             } else {
                 //remove all files from jarFiles
