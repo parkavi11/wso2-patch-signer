@@ -20,7 +20,6 @@ import org.wso2.patchvalidator.util.Util;
  */
 public class UatClient {
 
-
     public static JSONObject getUatAccessToken(String grantType, String username, String password,
                                                String scope, String key, String uri) {
 

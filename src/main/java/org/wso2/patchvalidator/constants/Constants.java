@@ -63,14 +63,14 @@ public final class Constants {
     public static final String WUM_UC_ERROR_MESSAGE = "Validating update ...[ERROR]";
     public static final String WUM_UC_SUCCESS_MESSAGE = "Validating update ...";
 
-    public static final String wumUatGrantType = "password";
-    public static final String wumUatGrantTypeValue = "client_credentials";
-    public static final String wumUatUsername = "um-bot-uat@wso2.com@wso2umuat";
-    public static final String wumUatPassword = "CmTLMJgk0hBMU";
-    public static final String wumUatScope = "updates_delete";
-    public static final String wumUatAppKey =
-            "Basic MmhyOVNnM2RjYVNNZURiUFU1NlpxMUJhZncwYTo1TGhCblUxVFYyYmFFNlJKd2JmMXVJSkRmRXdh";
-    public static final String wumUatAccessTokenUri = "https://gateway.api.cloud.wso2.com:443/token";
+    //Credentials for WUm UAT
+    public static final String wumUatGrantType = "";
+    public static final String wumUatGrantTypeValue = "";
+    public static final String wumUatUsername = "";
+    public static final String wumUatPassword = "";
+    public static final String wumUatScope = "";
+    public static final String wumUatAppKey = "";
+    public static final String wumUatAccessTokenUri = "";
 
     public Constants() {
         // restrict instantiation
