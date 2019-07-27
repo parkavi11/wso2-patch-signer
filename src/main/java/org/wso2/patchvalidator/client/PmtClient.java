@@ -93,6 +93,8 @@ public class PmtClient {
             if (statusCode == 200) {
                 if (lifeCycleState.equals(prop.getProperty("pmtLcAdminStgState"))) {
                     return Constants.PMT_UPDATE_ADMIN_STG_SUCCESSFUL;
+                } else if (lifeCycleState.equals(prop.getProperty("pmtLcUATStgState"))) {
+                    return Constants.PMT_UPDATE_UAT_STG_SUCCESSFUL;
                 } else if (lifeCycleState.equals(prop.getProperty("pmtLcTestingState"))) {
                     return Constants.PMT_UPDATE_TESTING_SUCCESSFUL;
                 } else if (lifeCycleState.equals(prop.getProperty("pmtLcReleasedState"))) {
