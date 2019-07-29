@@ -64,7 +64,16 @@ public final class Constants {
     public static final String WUM_UC_ERROR_MESSAGE = "Validating update ...[ERROR]";
     public static final String WUM_UC_SUCCESS_MESSAGE = "Validating update ...";
 
-    private Constants() {
+    //Credentials for WUm UAT
+    public static final String wumUatGrantType = "";
+    public static final String wumUatGrantTypeValue = "";
+    public static final String wumUatUsername = "";
+    public static final String wumUatPassword = "";
+    public static final String wumUatScope = "";
+    public static final String wumUatAppKey = "";
+    public static final String wumUatAccessTokenUri = "";
+
+    public Constants() {
         // restrict instantiation
     }
 

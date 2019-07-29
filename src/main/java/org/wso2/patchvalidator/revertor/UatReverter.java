@@ -1,9 +1,11 @@
 package org.wso2.patchvalidator.revertor;
 
 import java.util.Properties;
+
 import org.apache.commons.codec.binary.Base64;
 import org.json.simple.JSONObject;
 import org.wso2.patchvalidator.client.UatClient;
+import org.wso2.patchvalidator.constants.Constants;
 import org.wso2.patchvalidator.exceptions.ServiceException;
 import org.wso2.patchvalidator.util.PropertyLoader;
 
@@ -31,7 +33,7 @@ class UatReverter {
 //        return isWumDevReverted;
 
         try {
-            isWumStgReverted = deleteWumStg(patchId);
+            isWumStgReverted = deleteWumUat(patchId);
         } catch (ServiceException ex) {
             throw new ServiceException("Exception occurred when reverting WUM Stg, patchId:" + patchId,
                     ex.getDeveloperMessage(), ex);
@@ -58,50 +60,6 @@ class UatReverter {
         }
     }
 
-
-//    private static boolean deleteWumDev(String updateId) {
-//
-//        String uri = prop.getProperty("wumDevDeleteUrl");
-//        String jwtAssertionValue = getJwtAssertionValue(prop.getProperty("wumJwtAssertValue"));
-//        String forwardedForValue = prop.getProperty("forwardedForValue");
-//
-//        JSONObject devAccessTokenObj;
-//        boolean isUatUpdateDeleted;
-//
-//        try {
-//            devAccessTokenObj = UatClient.getUatAccessToken(prop.getProperty("wumDevAccessTokenUri"),
-//                    prop.getProperty("wumDevGrantType"), prop.getProperty("wumDevGrantTypeValue"),
-//                    prop.getProperty("wumDevAccTokenAuthorization"));
-//        } catch (ServiceException ex) {
-//            throw new ServiceException("Exception occurred, when retrieving access token from WUM DEV. " +
-//                    " wumDevAccessTokenUri:" + prop.getProperty("wumDevAccessTokenUri") +
-//                    " wumDevGrantType:" + prop.getProperty("wumDevGrantType") +
-//                    " wumDevGrantTypeValue:" + prop.getProperty("wumDevGrantTypeValue") +
-//                    " wumDevAccTokenAuthorization:" + prop.getProperty("wumDevAccTokenAuthorization"),
-//                    ex.getDeveloperMessage(), ex);
-//        }
-//        String authorizationValue = devAccessTokenObj.get("token_type") + " " + devAccessTokenObj.get("access_token");
-//
-//        try {
-//            isUatUpdateDeleted = UatClient.deleteUatUpdate(updateId, uri, jwtAssertionValue, forwardedForValue,
-//                    authorizationValue);
-//            if (isUatUpdateDeleted) {
-//                return true;
-//            } else {
-//                throw new ServiceException("Deleting WUM DEV update failed, " + " updateId:" + updateId +
-//                        " uri:" + uri + " jwtAssertionValue:" + jwtAssertionValue + " forwardedForValue:" +
-//                        forwardedForValue + " authorizationValue:" + authorizationValue,
-//                        "Deleting UAT update failed for the update \"" + updateId + "\", " +
-//                                "Please contact admin.");
-//            }
-//        } catch (ServiceException ex) {
-//            throw new ServiceException("Exception occurred when deleting WUM DEV update, " + " updateId:" + updateId +
-//                    " uri:" + uri + " jwtAssertionValue:" + jwtAssertionValue + " forwardedForValue:" +
-//                    forwardedForValue + " authorizationValue:" + authorizationValue, ex.getDeveloperMessage(), ex);
-//        }
-//    }
-
-
     private static boolean deleteWumStg(String updateId) {
 
         String uri = prop.getProperty("wumStgDeleteUrl");
@@ -112,15 +70,18 @@ class UatReverter {
         boolean isUatUpdateDeleted;
 
         try {
-            AccessTokenObj = UatClient.getUatAccessToken(prop.getProperty("wumStgAccessTokenUri"),
-                    prop.getProperty("wumStgGrantType"), prop.getProperty("wumStgGrantTypeValue"),
-                    prop.getProperty("wumStgAccTokenAuthorization"));
+            AccessTokenObj = UatClient.getUatAccessToken(prop.getProperty("wumUatGrantType"),
+                    prop.getProperty("wumUatUsername"), prop.getProperty("wumUatPassword"),
+                    prop.getProperty("wumUatScope"), prop.getProperty("wumUatAppKey"), prop.getProperty("wumUatAccessTokenUri"));
         } catch (ServiceException ex) {
             throw new ServiceException("Exception occurred, when retrieving access token from WUM Stg. " +
                     " wumStgAccessTokenUri:" + prop.getProperty("wumStgAccessTokenUri") +
                     " wumStgGrantType:" + prop.getProperty("wumStgGrantType") +
                     " wumStgGrantTypeValue:" + prop.getProperty("wumStgGrantTypeValue") +
-                    " wumStgAccTokenAuthorization:" + prop.getProperty("wumStgAccTokenAuthorization"),
+                    " wumStgAccTokenAuthorization:" + prop.getProperty("wumStgAccTokenAuthorization") +
+                    " wumStgAppKey:" + prop.getProperty("wumStgAppKey") +
+                    " wumStgUsername:" + prop.getProperty("wumStgUsername") +
+                    " wumStgScope:" + prop.getProperty("wumStgScope"),
                     ex.getDeveloperMessage(), ex);
         }
         String authorizationValue = AccessTokenObj.get("token_type") + " " + AccessTokenObj.get("access_token");
@@ -155,15 +116,19 @@ class UatReverter {
         boolean isUatUpdateDeleted;
 
         try {
-            AccessTokenObj = UatClient.getUatAccessToken(prop.getProperty("wumUatAccessTokenUri"),
-                    prop.getProperty("wumUatGrantType"), prop.getProperty("wumUatGrantTypeValue"),
-                    prop.getProperty("wumUatAccTokenAuthorization"));
+            AccessTokenObj = UatClient.getUatAccessToken(prop.getProperty("wumUatGrantType"),
+                    prop.getProperty("wumUatUsername"), prop.getProperty("wumUatPassword"),
+                    prop.getProperty("wumUatScope"), prop.getProperty("wumUatAppKey"), prop.getProperty("wumUatAccessTokenUri"));
         } catch (ServiceException ex) {
             throw new ServiceException("Exception occurred, when retrieving access token from WUM UAT. " +
                     " wumUatAccessTokenUri:" + prop.getProperty("wumUatAccessTokenUri") +
                     " wumUatGrantType:" + prop.getProperty("wumUatGrantType") +
                     " wumUatGrantTypeValue:" + prop.getProperty("wumUatGrantTypeValue") +
-                    " wumUatAccTokenAuthorization:" + prop.getProperty("wumUatAccTokenAuthorization"),
+                    " wumUatAccTokenAuthorization:" + prop.getProperty("wumUatAccTokenAuthorization") +
+                    " wumUatAppKey:" + prop.getProperty("wumUatAppKey") +
+                    " wumUatUsername:" + prop.getProperty("wumUatUsername") +
+                    " wumUatScope:" + prop.getProperty("wumUatScope") +
+                    " wumUatPassword:" + prop.getProperty("wumUatPassword"),
                     ex.getDeveloperMessage(), ex);
         }
         String authorizationValue = AccessTokenObj.get("token_type") + " " + AccessTokenObj.get("access_token");
