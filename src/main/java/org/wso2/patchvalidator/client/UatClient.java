@@ -30,20 +30,12 @@ public class UatClient {
         JSONObject resultObject;
 
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
-
             HttpPost request = new HttpPost(uri);
-
-            request.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-
             StringEntity params = new StringEntity(httpBody);
-
             request.setEntity(params);
-
             request.setHeader("Authorization", key);
             request.setHeader("Content-Type", "application/x-www-form-urlencoded");
-
             HttpResponse response = httpClient.execute(request);
-
             InputStream inStream = response.getEntity().getContent();
             String result = Util.convertStreamToString(inStream);
             int statusCode = response.getStatusLine().getStatusCode();
