@@ -84,7 +84,6 @@ public class UpdateValidator {
         }
 
         //Validating update jars
-        //@author Pramodya
         for (File file : Objects.requireNonNull(fl.listFiles())) {
             if (file.getName().endsWith(".zip")) {
                 String updateName = file.getName().replace(".zip","");
