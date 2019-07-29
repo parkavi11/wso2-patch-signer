@@ -70,9 +70,9 @@ class UatReverter {
         boolean isUatUpdateDeleted;
 
         try {
-            AccessTokenObj = UatClient.getUatAccessToken(Constants.wumUatGrantType,
-                    Constants.wumUatUsername, Constants.wumUatPassword,
-                    Constants.wumUatScope, Constants.wumUatAppKey, Constants.wumUatAccessTokenUri);
+            AccessTokenObj = UatClient.getUatAccessToken(prop.getProperty("wumUatGrantType"),
+                    prop.getProperty("wumUatUsername"), prop.getProperty("wumUatPassword"),
+                    prop.getProperty("wumUatScope"), prop.getProperty("wumUatAppKey"), prop.getProperty("wumUatAccessTokenUri"));
         } catch (ServiceException ex) {
             throw new ServiceException("Exception occurred, when retrieving access token from WUM Stg. " +
                     " wumStgAccessTokenUri:" + prop.getProperty("wumStgAccessTokenUri") +
@@ -115,23 +115,20 @@ class UatReverter {
         JSONObject AccessTokenObj;
         boolean isUatUpdateDeleted;
 
-        Constants constants = new Constants();
-
         try {
-            AccessTokenObj = UatClient.getUatAccessToken(prop.getProperty(Constants.wumUatGrantType),
-                    prop.getProperty(Constants.wumUatUsername), prop.getProperty(Constants.wumUatPassword),
-                    prop.getProperty(Constants.wumUatScope), prop.getProperty(Constants.wumUatAppKey),
-                    prop.getProperty(Constants.wumUatAccessTokenUri));
+            AccessTokenObj = UatClient.getUatAccessToken(prop.getProperty("wumUatGrantType"),
+                    prop.getProperty("wumUatUsername"), prop.getProperty("wumUatPassword"),
+                    prop.getProperty("wumUatScope"), prop.getProperty("wumUatAppKey"), prop.getProperty("wumUatAccessTokenUri"));
         } catch (ServiceException ex) {
             throw new ServiceException("Exception occurred, when retrieving access token from WUM UAT. " +
-                    " wumUatAccessTokenUri:" + Constants.wumUatAccessTokenUri +
-                    " wumUatGrantType:" + Constants.wumUatGrantType +
-                    " wumUatGrantTypeValue:" + Constants.wumUatGrantTypeValue +
+                    " wumUatAccessTokenUri:" + prop.getProperty("wumUatAccessTokenUri") +
+                    " wumUatGrantType:" + prop.getProperty("wumUatGrantType") +
+                    " wumUatGrantTypeValue:" + prop.getProperty("wumUatGrantTypeValue") +
                     " wumUatAccTokenAuthorization:" + prop.getProperty("wumUatAccTokenAuthorization") +
-                    " wumUatAppKey:" + Constants.wumUatAppKey +
-                    " wumUatUsername:" + Constants.wumUatUsername +
-                    " wumUatScope:" + Constants.wumUatScope +
-                    " wumUatPassword:" + Constants.wumUatPassword,
+                    " wumUatAppKey:" + prop.getProperty("wumUatAppKey") +
+                    " wumUatUsername:" + prop.getProperty("wumUatUsername") +
+                    " wumUatScope:" + prop.getProperty("wumUatScope") +
+                    " wumUatPassword:" + prop.getProperty("wumUatPassword"),
                     ex.getDeveloperMessage(), ex);
         }
         String authorizationValue = AccessTokenObj.get("token_type") + " " + AccessTokenObj.get("access_token");
