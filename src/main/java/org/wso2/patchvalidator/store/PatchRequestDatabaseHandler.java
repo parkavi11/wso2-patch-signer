@@ -45,28 +45,35 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatchRequestDatabaseHandler.class);
     private Properties prop = new Properties();
-    private Connection connectDB;
 
     {
         try {
             prop.load(SyncService.class.getClassLoader().getResourceAsStream("application.properties"));
-            String dbURL = prop.getProperty("dbURL");
-            String dbUser = prop.getProperty("dbUser");
-            String dbPassword = prop.getProperty("dbPassword");
-            connectDB = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-        } catch (SQLException | IOException e) {
-            LOG.error("Database connection failure.");
+        } catch (IOException e) {
+            LOG.error("Error occurs while getting properties");
         }
     }
 
+    private Connection getDBConnection() {
+        Connection dbConnection = null;
+        try {
+            String dbURL = prop.getProperty("dbURL");
+            String dbUser = prop.getProperty("dbUser");
+            String dbPassword = prop.getProperty("dbPassword");
+            dbConnection = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+        } catch (SQLException e) {
+            LOG.error("Database connection failure.", e);
+        }
+        return dbConnection;
+    }
 
     @Override
     public int getProductType(String product) {
 
-        try {
-            Statement create = connectDB.createStatement();
-            String productTypeChooser = "SELECT TYPE FROM WSO2_PATCH_VALIDATION_DATABASE.PRODUCT_DETAILS WHERE " +
-                    "PRODUCT_ABBREVIATION='" + product + "'";
+        try (Connection connectDB = getDBConnection(); Statement create = connectDB.createStatement()) {
+            String productTypeChooser =
+                    "SELECT TYPE FROM WSO2_PATCH_VALIDATION_DATABASE.PRODUCT_DETAILS WHERE " + "PRODUCT_ABBREVIATION='"
+                            + product + "'";
             ResultSet result = create.executeQuery(productTypeChooser);
 
             int type = 0;
@@ -84,41 +91,39 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
 
     @Override
     public String getProductAbbreviation(String productName, String productVersion) throws SQLException {
+        try (Connection connectDB = getDBConnection(); Statement create = connectDB.createStatement()) {
+            String productChooser = "SELECT PRODUCT_ABBREVIATION FROM WSO2_PATCH_VALIDATION_DATABASE.PRODUCT_DETAILS "
+                    + "WHERE PRODUCT_NAME='" + productName + "' AND PRODUCT_VERSION='" + productVersion + "'";
+            ResultSet result = create.executeQuery(productChooser);
 
-        Statement create = connectDB.createStatement();
-
-        String productChooser = "SELECT PRODUCT_ABBREVIATION FROM WSO2_PATCH_VALIDATION_DATABASE.PRODUCT_DETAILS " +
-                "WHERE PRODUCT_NAME='" + productName
-                + "' AND PRODUCT_VERSION='" + productVersion + "'";
-        ResultSet result = create.executeQuery(productChooser);
-
-        while (result.next()) {
-            productName = result.getString("PRODUCT_ABBREVIATION");
+            while (result.next()) {
+                productName = result.getString("PRODUCT_ABBREVIATION");
+            }
+            return productName;
         }
-        return productName;
     }
 
     @Override
     public String getProductURL(String productAbbreviation) throws SQLException {
 
-        Statement create = connectDB.createStatement();
-        String productUrl = null;
-        String productChooser = "SELECT PRODUCT_URL FROM WSO2_PATCH_VALIDATION_DATABASE.PRODUCT_DETAILS " +
-                "WHERE PRODUCT_ABBREVIATION='" + productAbbreviation + "'";
-        ResultSet result = create.executeQuery(productChooser);
+        try (Connection connectDB = getDBConnection(); Statement create = connectDB.createStatement()) {
+            String productUrl = null;
+            String productChooser = "SELECT PRODUCT_URL FROM WSO2_PATCH_VALIDATION_DATABASE.PRODUCT_DETAILS "
+                    + "WHERE PRODUCT_ABBREVIATION='" + productAbbreviation + "'";
+            ResultSet result = create.executeQuery(productChooser);
 
-        while (result.next()) {
-            productUrl = result.getString("PRODUCT_URL");
+            while (result.next()) {
+                productUrl = result.getString("PRODUCT_URL");
+            }
+            return productUrl;
         }
-        return productUrl;
     }
 
     @Override
     public JsonArray getProductList() {
 
         JsonArray productList = new JsonArray();
-        try {
-            Statement create = connectDB.createStatement();
+        try (Connection connectDB = getDBConnection(); Statement create = connectDB.createStatement()) {
             String productTypeChooser = "SELECT PRODUCT_NAME , PRODUCT_VERSION FROM " +
                     "WSO2_PATCH_VALIDATION_DATABASE.PRODUCT_DETAILS ORDER BY PRODUCT_NAME ASC";
             ResultSet result = create.executeQuery(productTypeChooser);
@@ -159,40 +164,42 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
                                           String developedBy,
                                           String status) throws SQLException {
 
-        Statement create = connectDB.createStatement();
+        try (Connection connectDB = getDBConnection(); Statement create = connectDB.createStatement()) {
 
-        version = getCarbonVersion(version);
-        String patchType = getPatchType(type);
+            version = getCarbonVersion(version);
+            String patchType = getPatchType(type);
 
-        String processStatus = "SELECT * FROM WSO2_PATCH_VALIDATION_DATABASE.TRACK_PATCH_VALIDATE_RESULTS " +
-                "WHERE STATUS='" + Constants.PROCESSING + "'";
-        ResultSet inProcess = create.executeQuery(processStatus);
+            String processStatus =
+                    "SELECT * FROM WSO2_PATCH_VALIDATION_DATABASE.TRACK_PATCH_VALIDATE_RESULTS " + "WHERE STATUS='"
+                            + Constants.PROCESSING + "'";
+            ResultSet inProcess = create.executeQuery(processStatus);
 
-        if (inProcess.next()) {
-            String postParametersInserter = "INSERT INTO WSO2_PATCH_VALIDATION_DATABASE.TRACK_PATCH_VALIDATE_RESULTS " +
-                    "(PATCH_ID,VERSION,STATE,TYPE," +
-                    "PRODUCT,DEVELOPED_BY,STATUS) VALUES ('" + patchId + "','" + version + "','" + state + "','" +
-                    patchType + "','" + product + "','" + developedBy + "','" + status + "')";
-            PreparedStatement proceed = connectDB.prepareStatement(postParametersInserter,
-                    Statement.RETURN_GENERATED_KEYS);
-            proceed.executeUpdate();
-            updatePostRequestStatus(product, patchId, Constants.QUEUE);
-        } else {
-            String postParametersInserter = "INSERT INTO " +
-                    "WSO2_PATCH_VALIDATION_DATABASE.TRACK_PATCH_VALIDATE_RESULTS(PATCH_ID,VERSION,STATE,TYPE," +
-                    "PRODUCT,DEVELOPED_BY,STATUS) VALUES ('" + patchId + "','" + version + "','" + state + "','" +
-                    patchType + "','" + product
-                    + "','" + developedBy + "','" + status + "')";
-            PreparedStatement proceed = connectDB.prepareStatement(postParametersInserter,
-                    Statement.RETURN_GENERATED_KEYS);
-            proceed.executeUpdate();
-            updatePostRequestStatus(product, patchId, Constants.PROCESSING);
+            if (inProcess.next()) {
+                String postParametersInserter =
+                        "INSERT INTO WSO2_PATCH_VALIDATION_DATABASE.TRACK_PATCH_VALIDATE_RESULTS "
+                                + "(PATCH_ID,VERSION,STATE,TYPE," + "PRODUCT,DEVELOPED_BY,STATUS) VALUES ('" + patchId
+                                + "','" + version + "','" + state + "','" + patchType + "','" + product + "','"
+                                + developedBy + "','" + status + "')";
+                PreparedStatement proceed = connectDB
+                        .prepareStatement(postParametersInserter, Statement.RETURN_GENERATED_KEYS);
+                proceed.executeUpdate();
+                updatePostRequestStatus(product, patchId, Constants.QUEUE);
+            } else {
+                String postParametersInserter = "INSERT INTO "
+                        + "WSO2_PATCH_VALIDATION_DATABASE.TRACK_PATCH_VALIDATE_RESULTS(PATCH_ID,VERSION,STATE,TYPE,"
+                        + "PRODUCT,DEVELOPED_BY,STATUS) VALUES ('" + patchId + "','" + version + "','" + state + "','"
+                        + patchType + "','" + product + "','" + developedBy + "','" + status + "')";
+                PreparedStatement proceed = connectDB
+                        .prepareStatement(postParametersInserter, Statement.RETURN_GENERATED_KEYS);
+                proceed.executeUpdate();
+                updatePostRequestStatus(product, patchId, Constants.PROCESSING);
+            }
         }
     }
 
     public void insertDataToErrorLog(String patchName, String state, String message, String messageType) {
 
-        try {
+        try (Connection connectDB = getDBConnection()) {
             message = message.replace("'", "\\'");
             String postParametersInserter = "INSERT INTO WSO2_PATCH_VALIDATION_DATABASE.PATCH_ERROR_LOG " +
                     "(PATCH_NAME,LC_STATE,MESSAGE,MESSAGE_TYPE) VALUES ('" + patchName + "','" + state + "','" + message +
@@ -213,7 +220,7 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
                                              String kernelVersion, String productAbbreviation,
                                              int wumSupported, int type, String productUrl) {
 
-        try {
+        try (Connection connectDB = getDBConnection()) {
             carbonVersion = getCarbonVersion(carbonVersion);
             //String patchType = getPatchType(type);
             String postParametersInserter = "INSERT INTO " +
@@ -235,41 +242,48 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
     @Override
     public Map<String, String> getProductDetails(String abbreviation) throws SQLException {
 
-        Map<String, String> map = new HashMap<>();
-        Statement create = connectDB.createStatement();
-        String productDetailsChooser = "SELECT * FROM WSO2_PATCH_VALIDATION_DATABASE.PRODUCT_DETAILS WHERE " +
-                "PRODUCT_ABBREVIATION='" + abbreviation + "'";
-        ResultSet result = create.executeQuery(productDetailsChooser);
+        try (Connection connectDB = getDBConnection()) {
+            Map<String, String> map = new HashMap<>();
+            Statement create = connectDB.createStatement();
+            String productDetailsChooser =
+                    "SELECT * FROM WSO2_PATCH_VALIDATION_DATABASE.PRODUCT_DETAILS WHERE " + "PRODUCT_ABBREVIATION='"
+                            + abbreviation + "'";
+            ResultSet result = create.executeQuery(productDetailsChooser);
 
-        while (result.next()) {
-            map.put("productName", result.getString("PRODUCT_NAME"));
-            map.put("productVersion", result.getString("PRODUCT_VERSION"));
+            while (result.next()) {
+                map.put("productName", result.getString("PRODUCT_NAME"));
+                map.put("productVersion", result.getString("PRODUCT_VERSION"));
+            }
+            return map;
         }
-        return map;
     }
 
     //get products for each carbon kernel version
     public ArrayList<String> getProductsByKernalVersion(String productKernal) throws SQLException {
 
-        Statement create = connectDB.createStatement();
-        ArrayList<String> productName = new ArrayList<>();
-        String productChooser = "SELECT PRODUCT_ABBREVIATION FROM WSO2_PATCH_VALIDATION_DATABASE.PRODUCT_DETAILS " +
-                "WHERE KERNEL_VERSION='" + productKernal + "'";
-        ResultSet result = create.executeQuery(productChooser);
+        try (Connection connectDB = getDBConnection()) {
+            Statement create = connectDB.createStatement();
+            ArrayList<String> productName = new ArrayList<>();
+            String productChooser = "SELECT PRODUCT_ABBREVIATION FROM WSO2_PATCH_VALIDATION_DATABASE.PRODUCT_DETAILS "
+                    + "WHERE KERNEL_VERSION='" + productKernal + "'";
+            ResultSet result = create.executeQuery(productChooser);
 
-        while (result.next()) {
-            productName.add(result.getString("PRODUCT_ABBREVIATION"));
+            while (result.next()) {
+                productName.add(result.getString("PRODUCT_ABBREVIATION"));
+            }
+            return productName;
         }
-        return productName;
     }
 
     public void updatePostRequestStatus(String product, String patchId, String status) throws SQLException {
 
-        String changeStatus = "UPDATE WSO2_PATCH_VALIDATION_DATABASE.TRACK_PATCH_VALIDATE_RESULTS SET status='" +
-                status + "' WHERE PRODUCT='" + product
-                + "' && PATCH_ID='" + patchId + "'";
-        PreparedStatement proceed = connectDB.prepareStatement(changeStatus, Statement.RETURN_GENERATED_KEYS);
-        proceed.executeUpdate();
+        try (Connection connectDB = getDBConnection()) {
+            String changeStatus =
+                    "UPDATE WSO2_PATCH_VALIDATION_DATABASE.TRACK_PATCH_VALIDATE_RESULTS SET status='" + status
+                            + "' WHERE PRODUCT='" + product + "' && PATCH_ID='" + patchId + "'";
+            PreparedStatement proceed = connectDB.prepareStatement(changeStatus, Statement.RETURN_GENERATED_KEYS);
+            proceed.executeUpdate();
+        }
 
     }
 
@@ -279,7 +293,7 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
      */
     public String getJarTimestamp(String jarName) {
 
-        try {
+        try (Connection connectDB = getDBConnection()) {
             Statement create = connectDB.createStatement();
             String jarTimestampChooser = "SELECT BUILD_TIMESTAMP FROM WSO2_PATCH_VALIDATION_DATABASE.JAR_TIMESTAMP " +
                     "WHERE FILE_NAME='" + jarName + "'";
@@ -303,7 +317,7 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
      */
     public void insertJarTimestamp(String jarName, String timestamp) {
 
-        try {
+        try (Connection connectDB = getDBConnection()) {
             String postParametersInserter = "INSERT INTO WSO2_PATCH_VALIDATION_DATABASE.JAR_TIMESTAMP " +
                     "(FILE_NAME,BUILD_TIMESTAMP) VALUES ('" + jarName + "','" + timestamp + "')";
             PreparedStatement proceed = connectDB.prepareStatement(postParametersInserter,
@@ -323,7 +337,7 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
      */
     public void insertTempJarTimestamp(String jarName, String jarTimestamp, String updateId) {
 
-        try {
+        try (Connection connectDB = getDBConnection()) {
             String postParametersInserter = "INSERT INTO WSO2_PATCH_VALIDATION_DATABASE.TEMP_JAR_TIMESTAMP " +
                     "(FILE_NAME,BUILD_TIMESTAMP,UPDATE_ID) VALUES ('" + jarName + "','" + jarTimestamp + "'," +
                     "'" + updateId + "')";
@@ -345,7 +359,7 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
      */
     public void clearTempJarTimestampTable() {
 
-        try {
+        try (Connection connectDB = getDBConnection()) {
             Statement create = connectDB.createStatement();
             String query = "SELECT * FROM WSO2_PATCH_VALIDATION_DATABASE.TEMP_JAR_TIMESTAMP " +
                     "ORDER BY FILE_NAME,BUILD_TIMESTAMP";
@@ -398,7 +412,7 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
      */
     public void deleteJarFromTemp(String updateId) {
 
-        try {
+        try (Connection connectDB = getDBConnection()) {
             String query = "DELETE FROM WSO2_PATCH_VALIDATION_DATABASE.TEMP_JAR_TIMESTAMP WHERE UPDATE_ID='" +
                     updateId + "'";
             PreparedStatement ps = connectDB.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -416,7 +430,7 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
         }
     }
 
-    public String getCarbonVersion(String carbonVersion) {
+    private String getCarbonVersion(String carbonVersion) {
 
         LOG.info(carbonVersion);
         switch (carbonVersion) {
