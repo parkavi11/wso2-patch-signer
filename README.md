@@ -233,6 +233,9 @@ on How to use Update Creator Tool.
     emailPassword=<SENDER_EMAIL_PASSWORD>
     ccList1=<ADMIN_USER_1_TO_CC_IN_THE_MAIL>
     ccList2= <ADMIN_USER_2_TO_CC_IN_THE_MAIL>
+    ccList3= <ADMIN_USER_3_TO_CC_IN_THE_MAIL>
+    ccList4= <WUM_TEAM_TO_CC_IN_THE_MAIL>
+    ccList5= <SUPPORT_DEV_TO_CC_IN_THE_MAIL>
     ```
 - Configurations for the PMT client
     ```
