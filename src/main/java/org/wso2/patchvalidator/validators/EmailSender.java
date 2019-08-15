@@ -121,6 +121,8 @@ public class EmailSender {
         ccList.add(prop.getProperty("ccList1"));
         ccList.add(prop.getProperty("ccList2"));
         ccList.add(prop.getProperty("ccList3"));
+        ccList.add(prop.getProperty("ccList4"));
+        ccList.add(prop.getProperty("ccList5"));
 
     }
 }

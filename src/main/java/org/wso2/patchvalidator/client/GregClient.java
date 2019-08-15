@@ -88,7 +88,7 @@ public class GregClient {
 
             //Initialize the pagination context.
             //Top five services, sortBy name , and sort order descending.
-            PaginationContext.init(0, 5, "DES", "overview_name", 100);
+            PaginationContext.init(0, 10, "ASC",  "wum_releasedTimestamp", 100);
             WSRegistrySearchClient wsRegistrySearchClient = new WSRegistrySearchClient(serverURL, username, password,
                     configContext);
 
