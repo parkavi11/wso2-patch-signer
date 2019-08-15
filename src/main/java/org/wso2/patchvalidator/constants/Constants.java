@@ -56,6 +56,13 @@ public final class Constants {
     public static final int PATCH_ONLY = 1;
     public static final int UPDATE_ONLY = 2;
     public static final int PATCH_AND_UPDATE = 3;
+    //wum uat credentials
+    public static final String WUM_UAT_ACCESS_TOKEN_URI = "wumUatAccessTokenUri";
+    public static final String WUM_UAT_ACCESS_TOKEN_AUTHORIZATION = "wumUatAccTokenAuthorization";
+    public static final String WUM_UAT_GRANT_TYPE = "wumUatGrantType";
+    public static final String WUM_UAT_GRANT_TYPE_VALUE = "wumUatGrantTypeValue";
+    public static final String WUM_UAT_DELETE_URL = "wumUatDeleteUrl";
+    public static final String WUM_UAT_SCOPE = "wumUatScope";
     //developer message
     public static final String CONTACT_ADMIN = "Contact admin. ";
     public static final String INTERNAL_PROBLEM = "Internal problem retrieving patch information.";
@@ -63,15 +70,6 @@ public final class Constants {
     public static final String SUCCESS_MESSAGE = "success";
     public static final String WUM_UC_ERROR_MESSAGE = "Validating update ...[ERROR]";
     public static final String WUM_UC_SUCCESS_MESSAGE = "Validating update ...";
-
-    //Credentials for WUm UAT
-    public static final String wumUatGrantType = "";
-    public static final String wumUatGrantTypeValue = "";
-    public static final String wumUatUsername = "";
-    public static final String wumUatPassword = "";
-    public static final String wumUatScope = "";
-    public static final String wumUatAppKey = "";
-    public static final String wumUatAccessTokenUri = "";
 
     public Constants() {
         // restrict instantiation
