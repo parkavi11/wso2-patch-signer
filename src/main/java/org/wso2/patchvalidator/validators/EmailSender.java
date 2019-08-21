@@ -84,7 +84,8 @@ public class EmailSender {
                                               String version, String patchValidateStatus, String updateValidateStatus,
                                               String pmtUpdateStatus) {
 
-        String subject ="", validationReturner= "";
+        String subject =""; 
+        String validationReturner= "";
 
         {
             String pmtUpdateStatusRow = "";
