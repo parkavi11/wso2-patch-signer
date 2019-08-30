@@ -24,7 +24,7 @@ public class UatClient {
                                                String scope, String key, String uri) {
 
         String httpBody =  "grant_type=" + grantType + "&username=" + username + "&password=" + password + "&scope="
-                + scope + "Basic " + "&key=" + key + "&uri=" + uri;
+                + scope + "&key=" + key + "&uri=" + uri;
 
         JSONParser parser = new JSONParser();
         JSONObject resultObject;
@@ -33,7 +33,7 @@ public class UatClient {
             HttpPost request = new HttpPost(uri);
             StringEntity params = new StringEntity(httpBody);
             request.setEntity(params);
-            request.setHeader("Authorization", key);
+            request.setHeader("Authorization","Basic " + key);
             request.setHeader("Content-Type", "application/x-www-form-urlencoded");
             HttpResponse response = httpClient.execute(request);
             InputStream inStream = response.getEntity().getContent();
