@@ -69,7 +69,8 @@ public class EmailSender {
             message.setContent(body, "text/html");
 
             Transport transport = session.getTransport(prop.getProperty("protocol"));
-            transport.connect(prop.getProperty("host"), prop.getProperty("userEmail"), prop.getProperty("emailPassword"));
+            transport.connect(prop.getProperty("host"), prop.getProperty("userEmail"),
+                    prop.getProperty("emailPassword"));
             Transport.send(message);
 
         } catch (MessagingException mex) {
@@ -83,33 +84,60 @@ public class EmailSender {
                                               String version, String patchValidateStatus, String updateValidateStatus,
                                               String pmtUpdateStatus) {
 
-        String subject;
+        String subject =""; 
+        String validationReturner= "";
 
         {
             String pmtUpdateStatusRow = "";
             if (!pmtUpdateStatus.equals("N/A")) {
-                pmtUpdateStatusRow = "<table style=\"width:100%\"border=\"1px\"><tr style=\"font-size: 12\">" +
-                        "<td align=\"center\" bgcolor=\"#e2efda\">" +
-                        pmtUpdateStatus +
-                        "</td>" +
-                        "</tr></table>";
+                if (pmtUpdateStatus.equals(" PMT LC state updated to \"Released not in public svn\" state.") ||
+                        pmtUpdateStatus.equals(" PMT LC state updated to \"UAT staging\" state.")) {
+
+                    pmtUpdateStatusRow = "<table style=\"width:100%\"border=\"1px\"><tr style=\"font-size: 12\">" +
+                            "<td align=\"center\" bgcolor=\"#def2d6\">" +
+                            pmtUpdateStatus +
+                            "</td>" +
+                            "</tr></table>";
+
+                    validationReturner = "<html><body><p>Patch signed successfully.</p> " +
+                            "<table style=\"width:100%\"border=\"1px\">" +
+                            "<tr style=\"font-size: 12\">" +
+                            "<th bgcolor='black' width='50%'><font color=\"white\">Update validate status</font></th>" +
+                            "<th bgcolor='black' width='50%'><font color=\"white\">Patch validate status</font></th>" +
+                            "<tr>" +
+                            "<td align=\"center\">" + updateValidateStatus + "</td>" +
+                            "<td align=\"center\">" + patchValidateStatus + "</td>" +
+                            "</tr></table>\n" +
+                            pmtUpdateStatusRow +
+                            "\n" +
+                            "</body>\n" +
+                            "</html>";
+
+                    subject = "[SIGN REQUEST SUCCESS] Sign the patch WSO2-CARBON-PATCH-" + version + "-" + patchId;
+                } else {
+                    pmtUpdateStatusRow = "<table style=\"width:100%\"border=\"1px\"><tr style=\"font-size: 12\">" +
+                            "<td align=\"center\" bgcolor=\"#ebc8c4\">" +
+                            pmtUpdateStatus +
+                            "</td>" +
+                            "</tr></table>";
+
+                    validationReturner = "<html><body><p>Failed to sign.</p> " +
+                            "<table style=\"width:100%\"border=\"1px\">" +
+                            "<tr style=\"font-size: 12\">" +
+                            "<th bgcolor='black' width='50%'><font color=\"white\">Update validate status</font></th>" +
+                            "<th bgcolor='black' width='50%'><font color=\"white\">Patch validate status</font></th>" +
+                            "<tr>" +
+                            "<td align=\"center\">" + updateValidateStatus + "</td>" +
+                            "<td align=\"center\">" + patchValidateStatus + "</td>" +
+                            "</tr></table>\n" +
+                            pmtUpdateStatusRow +
+                            "\n" +
+                            "</body>\n" +
+                            "</html>";
+
+                    subject = "[SIGN REQUEST FAILED] Sign the patch WSO2-CARBON-PATCH-" + version + "-" + patchId;
+                }
             }
-
-            String validationReturner = "<html><body><table style=\"width:100%\"border=\"1px\">" +
-                    "<tr style=\"font-size: 12\">" +
-                    "<th bgcolor='black' width='50%'><font color=\"white\">Update validate status</font></th>" +
-                    "<th bgcolor='black' width='50%'><font color=\"white\">Patch validate status</font></th>" +
-                    "<tr>" +
-                    "<td align=\"center\">" + updateValidateStatus + "</td>" +
-                    "<td align=\"center\">" + patchValidateStatus + "</td>" +
-                    "</tr></table>\n" +
-                    pmtUpdateStatusRow +
-                    "\n" +
-                    "</body>\n" +
-                    "</html>";
-
-            subject = "[SIGN REQUEST] Sign the patch WSO2-CARBON-PATCH-" + version + "-" + patchId;
-
             EmailSender.sendEmail(prop.getProperty("userEmail"), toList, ccList, subject, validationReturner);
         }
     }
