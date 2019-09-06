@@ -199,8 +199,8 @@ class Signer {
             //iterating products list
             for (String product : productList) {
 
-                String statusOfUpdateValidation = "Validating update ...'" + prop.getProperty("orgUpdate") +
-                        carbonVersion + "-" + patchId + "' " + Constants.UPDATE_VALIDATED;
+                String statusOfUpdateValidation = prop.getProperty("orgUpdate") + carbonVersion + "-" + patchId + "' "
+                        + Constants.UPDATE_VALIDATED;
                 //get product type from db, product details table
                 int productType;
                 try {

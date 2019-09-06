@@ -72,7 +72,8 @@ class UatReverter {
         try {
             AccessTokenObj = UatClient.getUatAccessToken(prop.getProperty("wumUatGrantType"),
                     prop.getProperty("wumUatUsername"), prop.getProperty("wumUatPassword"),
-                    prop.getProperty("wumUatScope"), prop.getProperty("wumUatAppKey"), prop.getProperty("wumUatAccessTokenUri"));
+                    prop.getProperty("wumUatScope"), prop.getProperty("wumUatAppKey"),
+                    prop.getProperty("wumUatAccessTokenUri"));
         } catch (ServiceException ex) {
             throw new ServiceException("Exception occurred, when retrieving access token from WUM Stg. " +
                     " wumStgAccessTokenUri:" + prop.getProperty("wumStgAccessTokenUri") +
@@ -118,7 +119,8 @@ class UatReverter {
         try {
             AccessTokenObj = UatClient.getUatAccessToken(prop.getProperty("wumUatGrantType"),
                     prop.getProperty("wumUatUsername"), prop.getProperty("wumUatPassword"),
-                    prop.getProperty("wumUatScope"), prop.getProperty("wumUatAppKey"), prop.getProperty("wumUatAccessTokenUri"));
+                    prop.getProperty("wumUatScope"), prop.getProperty("wumUatAppKey"),
+                    prop.getProperty("wumUatAccessTokenUri"));
         } catch (ServiceException ex) {
             throw new ServiceException("Exception occurred, when retrieving access token from WUM UAT. " +
                     " wumUatAccessTokenUri:" + prop.getProperty("wumUatAccessTokenUri") +

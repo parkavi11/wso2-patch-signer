@@ -76,7 +76,8 @@ public class UpdateValidator {
         File fl = new File(updateDestination);
         for (File file : Objects.requireNonNull(fl.listFiles())) {
             if (file.getName().endsWith(".md5") || file.getName().endsWith((".asc"))
-                    || file.getName().endsWith((".sha1"))) {
+                    || file.getName().endsWith((".sha1")) || file.getName().endsWith((".sha256"))
+                    || file.getName().endsWith((".sha512"))) {
                 errorMessage.append("update \"").append(updateId).append("\" was already signed. ");
                 LOG.error(errorMessage.toString());
                 return errorMessage.toString();

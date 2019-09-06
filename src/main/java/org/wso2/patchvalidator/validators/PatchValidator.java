@@ -84,7 +84,8 @@ public class PatchValidator {
         File fl = new File(patchDestination);
         for (File file : Objects.requireNonNull(fl.listFiles())) {
             if (file.getName().endsWith(".md5") || file.getName().endsWith((".asc"))
-                    || file.getName().endsWith((".sha1"))) {
+                    || file.getName().endsWith((".sha1"))|| file.getName().endsWith((".sha256"))
+                    || file.getName().endsWith((".sha512"))) {
                 developerMessage.append("patch: \"").append(patchId).append(" \" was already signed. ");
                 try {
                     FileUtils.deleteDirectory(new File(destFilePath));
