@@ -202,8 +202,8 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
         try (Connection connectDB = getDBConnection()) {
             message = message.replace("'", "\\'");
             String postParametersInserter = "INSERT INTO WSO2_PATCH_VALIDATION_DATABASE.PATCH_ERROR_LOG " +
-                    "(PATCH_NAME,LC_STATE,MESSAGE,MESSAGE_TYPE) VALUES ('" + patchName + "','" + state + "','" + message +
-                    "','" + messageType + "')";
+                    "(PATCH_NAME,LC_STATE,MESSAGE,MESSAGE_TYPE) VALUES ('" + patchName + "','" + state + "','" +
+                    message + "','" + messageType + "')";
             PreparedStatement proceed = connectDB.prepareStatement(postParametersInserter,
                     Statement.RETURN_GENERATED_KEYS);
             proceed.executeUpdate();
@@ -225,8 +225,8 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
             //String patchType = getPatchType(type);
             String postParametersInserter = "INSERT INTO " +
                     "WSO2_PATCH_VALIDATION_DATABASE.PRODUCT_DETAILS(PRODUCT_NAME,PRODUCT_VERSION,CARBON_VERSION," +
-                    "KERNEL_VERSION,PRODUCT_ABBREVIATION,WUM_SUPPORTED,TYPE,PRODUCT_URL) VALUES ('" + productName + "','" +
-                    productVersion + "','" + carbonVersion + "','" + kernelVersion + "','" + productAbbreviation
+                    "KERNEL_VERSION,PRODUCT_ABBREVIATION,WUM_SUPPORTED,TYPE,PRODUCT_URL) VALUES ('" + productName +
+                    "','" +productVersion + "','" + carbonVersion + "','" + kernelVersion + "','" + productAbbreviation
                     + "','" + wumSupported + "','" + type + "','" + productUrl + "')";
             PreparedStatement proceed = connectDB.prepareStatement(postParametersInserter,
                     Statement.RETURN_GENERATED_KEYS);

@@ -42,7 +42,7 @@ import static org.wso2.patchvalidator.service.Signer.sign;
 /**
  * All the endpoints in the microservice is defined here.
  */
-//@Path("/patch-validator")
+
 @Path("/request")
 public class SyncService {
 

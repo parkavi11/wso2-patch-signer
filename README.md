@@ -27,7 +27,7 @@ Auto patch signer micro service has 3 endpoints. “sign” is used to validate 
 revert signed patches and “addProduct” is used to add new product details to database. 
 
 #### sign
-This endpoint will invoke periodically in every 10 mins. This will validate and sign all the patches in PMT in 
+This endpoint will invoke periodically in every 2 hours. This will validate and sign all the patches in PMT in
 “Ready to sign” state and after each patch it will send a mail to the relevant developer about the status of the patch 
 validation and signing and log errors to the database.
 
@@ -63,13 +63,13 @@ should insert details of that product to the table using Add product service.
 
 - Developer submit the patch, update or patch and update to the PMT. Life cycle state of this patch will be changed to 
 “Ready to sign” state.
-- Sign service will be called periodically in every 10 mins and all the patches in the “Ready to sign” state will be 
+- Sign service will be called periodically in every 2 hours and all the patches in the “Ready to sign” state will be
 retrieved from PMT.
 - Micro-service will iterate this patches list one by one, get patch information for each from PMT, download the needed 
 patch or update zip from SVN repository and then validate it with each and every WSO2 product in overview products field
  of patch information.
 - If this WSO2 product is a new product, not available in the local server it will download it from Atuwa.
-- These products in the local server will be updated from WUM live sync in every 24 hours.
+- These products in the local server will be updated by WUM in every 24 hours.
 - If the validation finished successfully, micro-service will generate keys and commit to the WSO2  SVN repository.
 - If committing to SVN repository is successful, patch life cycle in PMT will be updated based on patch type.
     - Patch - Released, Released not automated, Released not in public svn
@@ -104,27 +104,46 @@ $ sudo apt-get install gnupg
 $ sudo apt-get install gnupg-agent
 ```
 
-Then, add the following to your **.bashrc/.zshrc**
+Then, add the following to your **.bashrc**
 ```bash
 export GPG_TTY=`tty`
 export GPG_AGENT_INFO
 ```
 
-##### (c) Generate new private key
+##### (c) Method 1: Generate new private key
 ```bash
 $ gpg --gen-key
+```
+##### (c) Method 2: Import keys from another machine
+```bash
+    - Identify your private key by running gpg --list-secret-keys. You need the ID of your private key (second column)
+    - Run this command to export your key: gpg --export-secret-keys $ID > my-private-key.asc
+    - Copy the key to the other machine (use scp to copy)
+    - To import the key, run gpg --import my-private-key.asc
+    - If the key already existed on the second machine, the import will fail saying 'Key already known'.
+    - You will have to delete both the private and public key first (gpg --delete-keys and gpg --delete-secret-keys)
+```
+
+***Please find Key Credentials in the deployment documentation.
+
+#### (d) Then change the ‘signing-script.sh’ file using new password used for new gpg private key in the location.
+```
+<LOCAL_PATH_WHERE_FILES_SAVED>/signing-script.sh
+```
+#### (e) Add passphrase to /home/wso2/.gnupg/passphrases file.
+
+#### (d) Setting the key to be the default.
+    - It is probably a good idea to set this key as default in your ~/.bashrc or ~/.profile.
+      Doing this will allow applications using GPG to automatically use your key.
+    - Set your key as the default key by entering this line in your ~/.bashrc
+      (along with any other environment variables to be exported):
+```
+export GPGKEY=<KEY ID>
 ```
 
 Additional reading:
 ```
 http://irtfweb.ifa.hawaii.edu/~lockhart/gpg/
-```
-
-***Please find Key Credentials in the deployment documentation.
-
-Then change the ‘signing-script.sh’ file using new password used for new gpg private key in the location.
-```
-<LOCAL_PATH_WHERE_FILES_SAVED>/signing-script.sh
 ```
 
 #### 2. Apache Subversion
@@ -173,6 +192,15 @@ $ export PATH=$PATH:/usr/local/wum/bin
 WUM initializing
 ```bash 
 $ wum init
+```
+Please add the following entry to your /etc/hosts file
+```bash
+192.168.67.37      ballerina-services.wso2.com
+```
+
+Initialise wum-uc
+```bash
+$ wum-uc init
 ```
 
 Then give credentials for wso2 account details.
@@ -249,7 +277,7 @@ on How to use Update Creator Tool.
     gregServerUri=<PMT_GOVERNANCE_REGISTRY_URI>
     gregUserName=<PMT_GOVERNANCE_REGISTRY_USERNAME>
     gregPassword=<PMT_GOVERNANCE_REGISTRY_PASSWORD>
-    gregCarbonHome=<PATH_TO_GOVERNANCE_REGISTRY_DISTRIBUTION_IN_THE_LOCAL_SERVER> // Eg: /home/debian/AutoPatchSign/greg/wso2greg-4.6.0
+    gregCarbonHome=<PATH_TO_GOVERNANCE_REGISTRY_DISTRIBUTION_IN_THE_LOCAL_SERVER> // Eg: /home/wso2/AutoPatchSign/greg/wso2greg-4.6.0
     gregTruststore=<JKS_FILE_PATH_IN_LOCAL_SERVER> // Eg: /home/debian/AutoPatchSign/revertTest/wso2carbon.jks
     gregTruststorePassword= <TRUST_STORE_PASSWORD>
     ```
@@ -278,20 +306,20 @@ on How to use Update Creator Tool.
 
 #### 1. Run “mvn clean install” 
 ```bash
-cd $Patch-Signer-master/
+cd $<PROJECT_HOME>/wso2-patch-signer/
 mvn clean install
 ```
 
-This will build the `patchSigner.jar` in `<PROJECT_HOME>/Patch-Signer-master/target`
+This will build the `auto-patch-signer-service-1.0.0.jar` in `<PROJECT_HOME>/auto-patch-signer/target`
 
 ### Deployment of Auto Patch and Update Signer Micro-service
 
-Copy the `patchSigner.jar` to `/home/ubuntu/auto-patch-signer/deployment`folder.
+Copy the `auto-patch-signer-service-1.0.0.jar` to `/home/wso2/AutoPatchSign/revertTest `folder.
  
-Make sure `netty-transports.yml` and `wso2carbon.jks` files are in the same location as `patchSigner.jar` file. Set 
-port number in the `netty-transport.yml` as following.
+Make sure `netty-transports.yml` and `wso2carbon.jks` files are in the same location as `auto-patch-signer-service-1.0.0.jar` file.
+Set port number in the `netty-transport.yml` as following.
 ```
-port : 9091
+port : 9192
 ```
 
 Run the jar file using the command.
