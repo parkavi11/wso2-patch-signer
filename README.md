@@ -116,10 +116,20 @@ $ gpg --gen-key
 ```
 ##### (c) Method 2: Import keys from another machine
 ```bash
-    - Identify your private key by running gpg --list-secret-keys. You need the ID of your private key (second column)
-    - Run this command to export your key: gpg --export-secret-keys $ID > my-private-key.asc
+    - Identify your private key by running below command:
+        ```bash
+        $ gpg --list-secret-keys.
+        ```
+    - You need the ID of your private key (second column)
+    - Run this command to export your key:
+        ```bash
+        $ gpg --export-secret-keys $ID > my-private-key.asc
+        ```
     - Copy the key to the other machine (use scp to copy)
-    - To import the key, run gpg --import my-private-key.asc
+    - To import the key
+        ```bash
+        $ gpg --import my-private-key.asc
+        ```
     - If the key already existed on the second machine, the import will fail saying 'Key already known'.
     - You will have to delete both the private and public key first (gpg --delete-keys and gpg --delete-secret-keys)
 ```
@@ -198,7 +208,7 @@ Please add the following entry to your /etc/hosts file
 192.168.67.37      ballerina-services.wso2.com
 ```
 
-Initialise wum-uc
+Initialise wum-uc. To validate the update, it unnecessary to initialise. But do this to make sure that wum-uc is setup correctly.
 ```bash
 $ wum-uc init
 ```
@@ -306,7 +316,7 @@ on How to use Update Creator Tool.
 
 #### 1. Run “mvn clean install” 
 ```bash
-cd $<PROJECT_HOME>/wso2-patch-signer/
+$ cd <PROJECT_HOME>/wso2-patch-signer/
 mvn clean install
 ```
 
