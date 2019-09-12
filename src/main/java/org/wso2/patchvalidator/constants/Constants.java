@@ -29,11 +29,11 @@ package org.wso2.patchvalidator.constants;
 public final class Constants {
 
     //SVN constants
-    public static final String SVN_CONNECTION_FAIL_STATE = "SVN connection failure.";
+    public static final String SVN_CONNECTION_FAIL_STATE = "SVN_CONNECTION_FAILURE.";
     public static final String COMMIT_KEYS_FAILURE = "Failure in committing keys to SVN.";
-    public static final String SUCCESSFULLY_KEY_COMMITTED = "Keys are successfully generated,committed and locked.";
+    public static final String SUCCESSFULLY_KEY_COMMITTED = "Keys successfully generated,committed and locked.";
     public static final String SUCCESSFULLY_VALIDATED = "Patch validation successful.";
-    public static final String UPDATE_VALIDATED = "Update validation successful.";
+    public static final String UPDATE_VALIDATED = "validation successfully finished.";
     public static final String PROCESSING = "IN_PROCESS";
     public static final String QUEUE = "IN_QUEUE";
     public static final String CONNECTION_SUCCESSFUL = "Connection Successful.";
@@ -61,8 +61,8 @@ public final class Constants {
     public static final String INTERNAL_PROBLEM = "Internal problem retrieving patch information.";
     public static final String FAILURE_MESSAGE = "failure";
     public static final String SUCCESS_MESSAGE = "success";
-    public static final String WUM_UC_ERROR_MESSAGE = "Validating update :[ERROR]";
-    public static final String WUM_UC_SUCCESS_MESSAGE = "Validating update :";
+    public static final String WUM_UC_ERROR_MESSAGE = "Validating update ...[ERROR]";
+    public static final String WUM_UC_SUCCESS_MESSAGE = "Validating update ...";
 
     //Credentials for WUm UAT
     public static final String wumUatGrantType = "";
