@@ -341,7 +341,7 @@ class Signer {
         setCCList(developedBy, toList, ccList);
         EmailSender.executeSendMail(toList, ccList, patchId, version, patchValidateStatus, updateValidateStatus,
                 pmtUpdateStatus);
-        LOG.info("Status mail has sent to the developer.");
+        LOG.info("Status mail has been sent to the developer.");
         //delete downloaded files
         deleteDownloadedPatchFilesFromServer();
     }
