@@ -125,6 +125,7 @@ public class UpdateValidator {
         }
 
         boolean check = new File(productDownloadPath, "wso2" + product + ".zip").exists();
+        LOG.info("check existence:" + check);
         //download needed vanilla product packs
         if (!productUrl.equals("") && !check) {
             try {

@@ -78,6 +78,7 @@ public class SvnClient {
                     .exec("bash " + patchDestination + "signing-script.sh " + patchDestination);
             executor.waitFor();
             resultSVNCommit = commitToSVN(patchUrl, patchDestination, patchId, version, patchType);
+            LOG.info(Constants.SUCCESSFULLY_KEY_COMMITTED);
             return resultSVNCommit;
 
         } catch (InterruptedException | IOException e) {

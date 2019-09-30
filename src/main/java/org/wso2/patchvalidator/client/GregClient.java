@@ -100,11 +100,12 @@ public class GregClient {
             Map<String, List<String>> listMap = new HashMap<>();
 
             //Create the search attribute map
-            listMap.put("lcName", new ArrayList<String>() {
-                {
-                    add("PatchLifeCycle");
-                }
-            });
+//            listMap.put("lcName", new ArrayList<String>() {
+//                {
+//                    //add("PatchLifeCycle");
+//                    add("Security_PatchLifeCycle");
+//                }
+//            });
             listMap.put("lcState", new ArrayList<String>() {
                 {
                     add("ReadyToSign");

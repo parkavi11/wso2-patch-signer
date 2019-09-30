@@ -93,14 +93,15 @@ public class EmailSender {
                 if (pmtUpdateStatus.equals(" PMT LC state updated to \"Released not in public svn\" state.") ||
                         pmtUpdateStatus.equals(" PMT LC state updated to \"UAT staging\" state.")) {
 
-                    pmtUpdateStatusRow = "<table style=\"width:100%\"border=\"1px\"><tr style=\"font-size: 12\">" +
+                    pmtUpdateStatusRow = "<table style=\"border-collapse:collapse;width:100%\"border=\"1px\">" +
+                            "<tr style=\"font-size: 12\">" +
                             "<td align=\"center\" bgcolor=\"#def2d6\">" +
                             pmtUpdateStatus +
                             "</td>" +
                             "</tr></table>";
 
                     validationReturner = "<html><body><p>Patch signed successfully.</p> " +
-                            "<table style=\"width:100%\"border=\"1px\">" +
+                            "<table style=\"border-collapse:collapse;width:100%\"border=\"1px\">" +
                             "<tr style=\"font-size: 12\">" +
                             "<th bgcolor='black' width='50%'><font color=\"white\">Update validate status</font></th>" +
                             "<th bgcolor='black' width='50%'><font color=\"white\">Patch validate status</font></th>" +
@@ -115,14 +116,15 @@ public class EmailSender {
 
                     subject = "[SIGN REQUEST SUCCESS] Sign the patch WSO2-CARBON-PATCH-" + version + "-" + patchId;
                 } else {
-                    pmtUpdateStatusRow = "<table style=\"width:100%\"border=\"1px\"><tr style=\"font-size: 12\">" +
+                    pmtUpdateStatusRow = "<table style=\"border-collapse:collapse;width:100%\"border=\"1px\">" +
+                            "<tr style=\"font-size: 12\">" +
                             "<td align=\"center\" bgcolor=\"#ebc8c4\">" +
                             pmtUpdateStatus +
                             "</td>" +
                             "</tr></table>";
 
                     validationReturner = "<html><body><p>Failed to sign.</p> " +
-                            "<table style=\"width:100%\"border=\"1px\">" +
+                            "<table style=\"border-collapse:collapse;width:100%\"border=\"1px\">" +
                             "<tr style=\"font-size: 12\">" +
                             "<th bgcolor='black' width='50%'><font color=\"white\">Update validate status</font></th>" +
                             "<th bgcolor='black' width='50%'><font color=\"white\">Patch validate status</font></th>" +

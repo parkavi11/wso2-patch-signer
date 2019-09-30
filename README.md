@@ -117,19 +117,13 @@ $ gpg --gen-key
 ##### (c) Method 2: Import keys from another machine
 ```bash
     - Identify your private key by running below command:
-        ```bash
         $ gpg --list-secret-keys.
-        ```
     - You need the ID of your private key (second column)
     - Run this command to export your key:
-        ```bash
         $ gpg --export-secret-keys $ID > my-private-key.asc
-        ```
     - Copy the key to the other machine (use scp to copy)
     - To import the key
-        ```bash
         $ gpg --import my-private-key.asc
-        ```
     - If the key already existed on the second machine, the import will fail saying 'Key already known'.
     - You will have to delete both the private and public key first (gpg --delete-keys and gpg --delete-secret-keys)
 ```
@@ -334,5 +328,5 @@ port : 9192
 
 Run the jar file using the command.
 ```bash
-java -j ar -Dtransports.netty.conf=netty-transports.yml auto-patch-signer-service-1.0.0.jar
+java -jar -Dtransports.netty.conf=netty-transports.yml auto-patch-signer-service-1.0.0.jar
 ```
