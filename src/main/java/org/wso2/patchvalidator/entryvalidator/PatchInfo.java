@@ -70,6 +70,16 @@ public class PatchInfo {
                             Util.createListFromJsonArray((JSONArray) element.get("value")),
                             "Patch life cycle state is not valid. Please amend and re-submit.", ex);
                 }
+            } else if (element.get("name").equals("registry.lifecycle.Security_PatchLifeCycle.state")) {
+                try {
+                    this.setPatchLifeCycleState
+                            (Util.createListFromJsonArray((JSONArray) element.get("value")).get(0));
+                } catch (Exception ex) {
+                    throw new ServiceException("registry.lifecycle.Security_PatchLifeCycle.state property is not valid in" +
+                            " the pmt patch json, registry.lifecycle.Security_PatchLifeCycle.state:" +
+                            Util.createListFromJsonArray((JSONArray) element.get("value")),
+                            "Patch life cycle state is not valid. Please amend and re-submit.", ex);
+                }
             } else if (element.get("name").equals("wum_status")) {
                 try {
                     this.setWumStatus(Util.createListFromJsonArray((JSONArray) element.get("value")).get(0));

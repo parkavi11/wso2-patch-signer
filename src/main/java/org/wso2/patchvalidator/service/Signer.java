@@ -180,6 +180,7 @@ class Signer {
             String[] productList;
             try {
                 productList = Util.getProductList(productNameArray);
+                LOG.info("Products Lists:" + productsList);
             } catch (Exception ex) {
                 String kernelError = "Problem with retrieving products by kernel version from database. ";
                 LOG.error(kernelError, ex);
@@ -202,6 +203,7 @@ class Signer {
                 String statusOfUpdateValidation = "Validating update ...'" +prop.getProperty("orgUpdate")
                         + carbonVersion + "-" + patchId + "' " + Constants.UPDATE_VALIDATED;
                 //get product type from db, product details table
+                LOG.info("Product:" + product);
                 int productType;
                 try {
                     productType = patchRequestDatabaseHandler.getProductType(product);
@@ -339,6 +341,7 @@ class Signer {
         setCCList(developedBy, toList, ccList);
         EmailSender.executeSendMail(toList, ccList, patchId, version, patchValidateStatus, updateValidateStatus,
                 pmtUpdateStatus);
+        LOG.info("Status mail has been sent to the developer.");
         //delete downloaded files
         deleteDownloadedPatchFilesFromServer();
     }

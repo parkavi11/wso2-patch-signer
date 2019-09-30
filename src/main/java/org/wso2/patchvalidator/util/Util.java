@@ -91,9 +91,14 @@ public class Util {
             }
             String name = productName.substring(0, product);
             name = name.trim().toLowerCase();
-            String versions = productName.substring(product);
-            versions = versions.trim();
-
+            String versionString = productName.substring(product);
+            versionString = versionString.trim();
+            String versions = "";
+            if (versionString.length() > 5) {
+                versions =versionString.substring(0,5);
+            }else {
+                versions =versionString;
+            }
             if (name.equals("carbon")) {
                 ArrayList<String> tempArr;
                 try {
