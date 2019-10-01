@@ -14,6 +14,8 @@ import org.wso2.patchvalidator.store.PatchRequestDatabaseHandler;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.wso2.patchvalidator.validators.PatchZipValidator.extractFile;
 
@@ -84,6 +86,7 @@ public class Util {
         ArrayList<String> kernelProduct = new ArrayList<>();
         for (String productName : productNameArray) {
             int product;
+            String versions = "";
             for (product = 0; product < productName.length(); product++) {
                 char c = productName.charAt(product);
                 if ('0' <= c && c <= '9')
@@ -91,13 +94,12 @@ public class Util {
             }
             String name = productName.substring(0, product);
             name = name.trim().toLowerCase();
-            String versionString = productName.substring(product);
-            versionString = versionString.trim();
-            String versions = "";
-            if (versionString.length() > 5) {
-                versions =versionString.substring(0,5);
-            }else {
-                versions =versionString;
+            String patternStyle = "([0-9][0-9]*)+(\\.[0-9][0-9]*)+(\\.[0-9][0-9]*)";
+            Pattern regex = Pattern.compile(patternStyle);
+            Matcher matcher = regex.matcher(productName);
+            //String versionString = productName.substring(product);
+            while(matcher.find()){
+                versions = (matcher.group(0));
             }
             if (name.equals("carbon")) {
                 ArrayList<String> tempArr;
