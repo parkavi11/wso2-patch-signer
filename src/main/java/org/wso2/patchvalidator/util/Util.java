@@ -80,6 +80,28 @@ public class Util {
      * @param productNameArray array of names products & kernel products
      * @return array of product names
      */
+    public static String getChannelName(String[] productNameArray) {
+        String name ="";
+        String channel = "";
+        for (String productName : productNameArray) {
+            productName = productName.replaceAll("\\s+", "");
+            productName = productName.trim().toLowerCase();
+            String pattern = "([a-z][a-z]*)+([0-9][0-9]*)+(\\.[0-9][0-9]*)+(\\.[0-9][0-9]*\\.)";
+            Pattern regex = Pattern.compile(pattern);
+            Matcher matcher = regex.matcher(productName);
+            while (matcher.find()) {
+                name = (matcher.group(0));
+            }
+            if (name.equals("")){
+                channel ="full";
+            } else {
+                channel =productName.replaceAll(name,"");
+                channel= channel.trim();
+            }
+        }
+        return channel;
+    }
+
     public static String[] getProductList(String[] productNameArray) {
 
         PatchRequestDatabaseHandler patchRequestDatabaseHandler = new PatchRequestDatabaseHandler();
