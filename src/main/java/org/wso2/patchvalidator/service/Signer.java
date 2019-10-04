@@ -178,6 +178,7 @@ class Signer {
 
             //get all products list, retrieving products by kernel version (carbon-4.4.1 .. )
             String[] productList;
+            String channel = Util.getChannelName(productNameArray);
             try {
                 productList = Util.getProductList(productNameArray);
                 LOG.info("Products Lists:" + productsList);
@@ -232,7 +233,7 @@ class Signer {
 
                     } else if (productType == UPDATE_ONLY) { //update validation
                         updateValidateStatus = updateValidator.zipUpdateValidate(patchId, carbonVersion, productType,
-                                product);
+                                product, channel);
 
                         if (updateValidateStatus.equals(statusOfUpdateValidation)) {
                             updateValidationStatus = true;
@@ -247,7 +248,7 @@ class Signer {
                         patchValidateStatus = patchValidator.zipPatchValidate(patchId, carbonVersion, productType,
                                 productNameArray);
                         updateValidateStatus = updateValidator.zipUpdateValidate(patchId, carbonVersion, productType,
-                                product);
+                                product, channel);
 
                         if ((patchValidateStatus.trim().equals(Constants.SUCCESSFULLY_VALIDATED))) {
                             patchValidationStatus = true;

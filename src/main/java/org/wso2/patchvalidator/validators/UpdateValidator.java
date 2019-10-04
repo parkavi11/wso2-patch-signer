@@ -44,7 +44,7 @@ public class UpdateValidator {
     public String updateUrl = "null";
     public String updateDestination = "null";
 
-    public String zipUpdateValidate(String updateId, String version, int type, String product) {
+    public String zipUpdateValidate(String updateId, String version, int type, String product, String channel) {
 
         String typeof = null;
         if (type == 2 || type == 3) {
@@ -123,10 +123,19 @@ public class UpdateValidator {
                     " get the vanilla pack URL. ").append(CONTACT_ADMIN);
             LOG.error(errorMessage.toString());
         }
-
-        boolean check = new File(productDownloadPath, "wso2" + product + ".zip").exists();
+        boolean check =false;
+        LOG.info("Channel :" +channel);
+        if (channel.equals("full")){
+            check = new File(productDownloadPath, "wso2" + product + ".zip").exists();
+            LOG.info("Validation Path"+ productDownloadPath);
+        } else if (channel.equals("security" ) || channel.equals("fidelity") || channel.equals("cloud")){
+            check = new File(productDownloadPath+channel, "wso2" + product + ".zip").exists();
+            productDownloadPath =productDownloadPath+channel+"/";
+            LOG.info("Validation Path"+ productDownloadPath);
+        }else {
+            LOG.info("Channel is not available");
+        }
         LOG.info("check existence:" + check);
-        //download needed vanilla product packs
         if (!productUrl.equals("") && !check) {
             try {
                 Process executor = Runtime.getRuntime().exec("bash " + productDownloadPath +
