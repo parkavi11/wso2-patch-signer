@@ -114,7 +114,7 @@ public class EmailSender {
                             "</body>\n" +
                             "</html>";
 
-                    subject = "[SIGN REQUEST SUCCESS] Sign the patch WSO2-CARBON-PATCH-" + version + "-" + patchId;
+                    subject = "[SIGN REQUEST STATUS] Sign the patch WSO2-CARBON-PATCH-" + version + "-" + patchId;
                 } else {
                     pmtUpdateStatusRow = "<table style=\"border-collapse:collapse;width:100%\"border=\"1px\">" +
                             "<tr style=\"font-size: 12\">" +
@@ -137,7 +137,7 @@ public class EmailSender {
                             "</body>\n" +
                             "</html>";
 
-                    subject = "[SIGN REQUEST FAILED] Sign the patch WSO2-CARBON-PATCH-" + version + "-" + patchId;
+                    subject = "[SIGN REQUEST STATUS] Sign the patch WSO2-CARBON-PATCH-" + version + "-" + patchId;
                 }
             }
             EmailSender.sendEmail(prop.getProperty("userEmail"), toList, ccList, subject, validationReturner);
@@ -153,6 +153,7 @@ public class EmailSender {
         ccList.add(prop.getProperty("ccList3"));
         ccList.add(prop.getProperty("ccList4"));
         ccList.add(prop.getProperty("ccList5"));
+        ccList.add(prop.getProperty("ccList6"));
 
     }
 }
