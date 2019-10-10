@@ -82,7 +82,7 @@ public class EmailSender {
 
     public static void executeSendMail(ArrayList<String> toList, ArrayList<String> ccList, String patchId,
                                               String version, String patchValidateStatus, String updateValidateStatus,
-                                              String pmtUpdateStatus) {
+                                              String pmtUpdateStatus, String releaseState) {
 
         String subject =""; 
         String validationReturner= "";
@@ -100,7 +100,8 @@ public class EmailSender {
                             "</td>" +
                             "</tr></table>";
 
-                    validationReturner = "<html><body><p>Patch signed successfully.</p> " +
+                    validationReturner = "<html><body><p>Status of the patch: <b>Succeed</b></p> " +
+                            "<p>WUM Release State: <b>" +releaseState +"</b></p> "+
                             "<table style=\"border-collapse:collapse;width:100%\"border=\"1px\">" +
                             "<tr style=\"font-size: 12\">" +
                             "<th bgcolor='black' width='50%'><font color=\"white\">Update validate status</font></th>" +
@@ -114,7 +115,7 @@ public class EmailSender {
                             "</body>\n" +
                             "</html>";
 
-                    subject = "[SIGN REQUEST STATUS] Sign the patch WSO2-CARBON-PATCH-" + version + "-" + patchId;
+                    subject = "[SIGN REQUEST STATUS] WSO2-CARBON-PATCH-" + version + "-" + patchId;
                 } else {
                     pmtUpdateStatusRow = "<table style=\"border-collapse:collapse;width:100%\"border=\"1px\">" +
                             "<tr style=\"font-size: 12\">" +
@@ -122,8 +123,8 @@ public class EmailSender {
                             pmtUpdateStatus +
                             "</td>" +
                             "</tr></table>";
-
-                    validationReturner = "<html><body><p>Failed to sign.</p> " +
+                    validationReturner = "<html><body><p>Status of the patch: <b>Failed</b></p> " +
+                            "<p>WUM Release State: <b>" +releaseState +"</b></p> "+
                             "<table style=\"border-collapse:collapse;width:100%\"border=\"1px\">" +
                             "<tr style=\"font-size: 12\">" +
                             "<th bgcolor='black' width='50%'><font color=\"white\">Update validate status</font></th>" +
@@ -137,7 +138,7 @@ public class EmailSender {
                             "</body>\n" +
                             "</html>";
 
-                    subject = "[SIGN REQUEST STATUS] Sign the patch WSO2-CARBON-PATCH-" + version + "-" + patchId;
+                    subject = "[SIGN REQUEST STATUS] WSO2-CARBON-PATCH-" + version + "-" + patchId;
                 }
             }
             EmailSender.sendEmail(prop.getProperty("userEmail"), toList, ccList, subject, validationReturner);
