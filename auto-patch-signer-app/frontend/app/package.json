@@ -1,0 +1,27 @@
+{
+  "name": "pmtapp",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "express": "^4.16.3",
+    "mysql": "^2.15.0",
+    "net": "^1.0.2",
+    "net-socket": "^1.1.0",
+    "prop-types": "^15.6.1",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-http-request": "^1.0.4",
+    "react-scripts": "1.1.1",
+    "react-select": "^2.0.0-alpha.8",
+    "react-simpletabs": "^0.7.0",
+    "react-tabs": "^2.2.2",
+    "react-validation": "^3.0.7",
+    "superagent": "^3.8.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
