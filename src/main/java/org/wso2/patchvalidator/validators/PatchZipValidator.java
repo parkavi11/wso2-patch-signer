@@ -344,8 +344,8 @@ public class PatchZipValidator implements CommonValidator {
                 checkout.setSingleTarget(SvnTarget.fromFile(destinationDirectory));
                 checkout.run();
             } catch (SVNException e) {
-                LOG.error("Requested url not found");
-                return "Requested url not found: \"" + url + "\"";
+                LOG.error("Exception is "+ e);
+                return "Exception occurred. ";
             }
         }
         return "";

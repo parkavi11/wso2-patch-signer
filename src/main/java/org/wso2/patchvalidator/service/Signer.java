@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.wso2.patchvalidator.client.GregClient;
 import org.wso2.patchvalidator.client.PmtClient;
 import org.wso2.patchvalidator.client.SvnClient;
+import org.wso2.patchvalidator.client.UmtClient;
 import org.wso2.patchvalidator.constants.Constants;
 import org.wso2.patchvalidator.entryvalidator.PatchInfo;
 import org.wso2.patchvalidator.exceptions.ServiceException;
@@ -25,6 +26,8 @@ import org.wso2.patchvalidator.validators.UpdateValidator;
 
 import static org.wso2.patchvalidator.constants.Constants.*;
 import static org.wso2.patchvalidator.validators.EmailSender.setCCList;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Patch signing process handled by this class.
@@ -51,10 +54,33 @@ class Signer {
         boolean updateValidationStatus = true;
         ArrayList<String> patchesList = new ArrayList<>();
         StringBuilder returnMessage = new StringBuilder();
+        HashMap<String, String> hMap = new HashMap<>();
+        ArrayList<String> list = new ArrayList<>();
+        ArrayList<String> orderedList = new ArrayList<>();
+        LinkedHashMap<String, String> sortedMap = new LinkedHashMap<>();
 
+        String carbonVersion;
+        String patchId;
+        String pmtUpdateStatus;
+        String releasedState;
+        String developer;
+        String patchValidateStatus = "N/A";
+        String updateValidateStatus = "N/A";
+        String currentState = readyToSignState;
+        StringBuilder developerMessage = new StringBuilder();
+        JSONArray pmtResultArr;
+        JSONObject patchJson;
+        PatchInfo patchInfo;
+        PatchValidator patchValidator = new PatchValidator();
+        UpdateValidator updateValidator = new UpdateValidator();
+
+        LOG.info("******************************************************************");
+        LOG.info("                      NEW SIGN REQUEST                            ");
+        LOG.info("******************************************************************");
         // call governance registry and get all the patches in the ReadyToSign state
         try {
-            patchesList = GregClient.search();
+            patchesList = UmtClient.getPatchList();
+            LOG.info("Patch List is :" + patchesList);
         } catch (Exception ex) {
             LOG.error("Exception occurred when searching patches in the governance registry", ex);
         }
@@ -63,28 +89,15 @@ class Signer {
             LOG.info("No patches in the \"Ready to sign\" state");
         }
 
-        // iterate the patches list
+        /**
+         * iterate the patches list and check the state in registry
+         */
+
         for (String patch : patchesList) {
-
-            String carbonVersion;
-            String patchId;
-            String pmtUpdateStatus;
-            String releasedState;
-            String developer;
-            String patchValidateStatus = "N/A";
-            String updateValidateStatus = "N/A";
-            String currentState = readyToSignState;
-            String patchName = patch.replace("/patchs/", "");
-            StringBuilder developerMessage = new StringBuilder();
-            JSONArray pmtResultArr;
-            JSONObject patchJson;
-            PatchInfo patchInfo;
-            PatchValidator patchValidator = new PatchValidator();
-            UpdateValidator updateValidator = new UpdateValidator();
-
-            //get version and patch id from greg patch name string
+            String patchName = patch;
+            //get version and patch id from patch name string
             try {
-                //'/patchs/WSO2-CARBON-PATCH-4.4.0-2912'
+                //WSO2-CARBON-PATCH-4.4.0-2912
                 String[] patchReplacedNameArr = patch.replace(prop.getProperty("gregNameReplaceTerm"), "")
                         .split("-");
                 carbonVersion = patchReplacedNameArr[0].trim();//carbon version - 4.2.0/4.4.0/5.0.0
@@ -103,7 +116,78 @@ class Signer {
                 patchJson = PmtClient.getPatchInfo(carbonVersion, patchId);
                 pmtResultArr = (JSONArray) patchJson.get("pmtResult");
             } catch (ServiceException ex) {
-                LOG.error("Retrieving patch json failed, patch:" + carbonVersion + "-" + patch, ex);
+                LOG.error("Retrieving patch json failed, patch:" + patch, ex);
+                continue;
+            }
+
+            try {
+                patchInfo = new PatchInfo(pmtResultArr);
+            } catch (Exception ex) {
+                LOG.error("Creating object from pmt patch json failed, patch name: \"" + patch + "\". ", ex);
+                continue;
+            }
+
+            if (patchInfo.getPatchLifeCycleState().equals("ReadyToSign")) {
+                //LOG.info("The Patch " + patch + "is in " + patchInfo.getPatchLifeCycleState() + "state");
+                hMap.put(patch, patchInfo.getWumReleasedTimestamp());
+            } else {
+                LOG.info("The Patch " + patch + "is in " + patchInfo.getPatchLifeCycleState() + "state");
+            }
+        }
+
+        /**
+         * After validating the patch status with registry : use hashmap and create new patch list by timestamp order
+         */
+        for (Map.Entry<String, String> entry : hMap.entrySet()) {
+            list.add(entry.getValue());
+        }
+        Collections.sort(list, new Comparator<String>() {
+            public int compare(String str, String str1) {
+                return (str).compareTo(str1);
+            }
+        });
+        for (String str : list) {
+            for (Entry<String, String> entry : hMap.entrySet()) {
+                if (entry.getValue().equals(str)) {
+                    sortedMap.put(entry.getKey(), str);
+                    orderedList.add(entry.getKey());
+                }
+            }
+        }
+        LOG.info("Sorted list to be signed : "+orderedList);
+
+        //validate pmt entry
+//
+//            boolean isEntryValid;
+//            PmtEntryValidator pmtEntryValidator = new  PmtEntryValidator();
+//            try {
+//                isEntryValid = pmtEntryValidator.validatePmtEntry(pmtPatchJson);
+//            } catch (Exception ex){
+//                LOG.error("PMT entry validation failed, patch name:" + patch, ex);
+//                continue;
+//            }
+//            if (!isEntryValid){
+//                LOG.error("PMT entry validation failed, patch name:" + patch);
+//                continue;
+//            }
+
+        /**
+         * get product list from PMT patch JSON and do patch/update validation
+         */
+        LOG.info("Ordered List: "+orderedList);
+        for (String patch : orderedList) {
+
+            LOG.info("Patch :   "+ patch);
+            String[] patchReplacedNameArr = patch.replace(prop.getProperty("gregNameReplaceTerm"), "")
+                    .split("-");
+            carbonVersion = patchReplacedNameArr[0].trim();//carbon version - 4.2.0/4.4.0/5.0.0
+            LOG.info("version: " + carbonVersion);
+            patchId = patchReplacedNameArr[1].trim();
+            try {
+                patchJson = PmtClient.getPatchInfo(carbonVersion, patchId);
+                pmtResultArr = (JSONArray) patchJson.get("pmtResult");
+            } catch (ServiceException ex) {
+                LOG.error("Retrieving patch json failed, patch:" + patch, ex);
                 //update PMT to `Testing`
                 pmtUpdateStatus = updatePmtLcState(patchId, carbonVersion, testingState);
                 developerMessage.append(ex.getDeveloperMessage()).append(" ").append(pmtUpdateStatus);
@@ -111,8 +195,8 @@ class Signer {
                 if (pmtUpdateStatus.equals(Constants.PMT_UPDATE_TESTING_SUCCESSFUL)) {
                     currentState = testingState;
                 }
-                patchRequestDatabaseHandler.insertDataToErrorLog(patchName, currentState,
-                        developerMessage.toString(), FAILURE_MESSAGE);
+                patchRequestDatabaseHandler.insertDataToErrorLog(patch, currentState, developerMessage.toString(),
+                        FAILURE_MESSAGE);
                 continue;
             }
 
@@ -129,7 +213,7 @@ class Signer {
                 if (pmtUpdateStatus.equals(Constants.PMT_UPDATE_TESTING_SUCCESSFUL)) {
                     currentState = testingState;
                 }
-                patchRequestDatabaseHandler.insertDataToErrorLog(patchName, currentState,
+                patchRequestDatabaseHandler.insertDataToErrorLog(patch, currentState,
                         developerMessage.toString(), FAILURE_MESSAGE);
                 continue;
             }
@@ -146,25 +230,11 @@ class Signer {
                 if (pmtUpdateStatus.equals(Constants.PMT_UPDATE_TESTING_SUCCESSFUL)) {
                     currentState = testingState;
                 }
-                patchRequestDatabaseHandler.insertDataToErrorLog(patchName, currentState, developerMessage.toString(),
+                patchRequestDatabaseHandler.insertDataToErrorLog(patch, currentState, developerMessage.toString(),
                         FAILURE_MESSAGE);
                 continue;
             }
 
-            //validate pmt entry
-//
-//            boolean isEntryValid;
-//            PmtEntryValidator pmtEntryValidator = new  PmtEntryValidator();
-//            try {
-//                isEntryValid = pmtEntryValidator.validatePmtEntry(pmtPatchJson);
-//            } catch (Exception ex){
-//                LOG.error("PMT entry validation failed, patch name:" + patch, ex);
-//                continue;
-//            }
-//            if (!isEntryValid){
-//                LOG.error("PMT entry validation failed, patch name:" + patch);
-//                continue;
-//            }
 
             //get product list from PMT patch JSON
             List<String> productsList = patchInfo.getOverviewProducts();
@@ -193,7 +263,7 @@ class Signer {
                 if (pmtUpdateStatus.equals(Constants.PMT_UPDATE_TESTING_SUCCESSFUL)) {
                     currentState = testingState;
                 }
-                patchRequestDatabaseHandler.insertDataToErrorLog(patchName, currentState, developerMessage.toString(),
+                patchRequestDatabaseHandler.insertDataToErrorLog(patch, currentState, developerMessage.toString(),
                         FAILURE_MESSAGE);
                 continue;
             }
@@ -210,9 +280,9 @@ class Signer {
                     productType = patchRequestDatabaseHandler.getProductType(product);
 
                 } catch (ServiceException ex) {
-                    LOG.error(ex.getDeveloperMessage() + "patch:" + patchName + " product:" + product + ". ", ex);
+                    LOG.error(ex.getDeveloperMessage() + "patch:" + patch + " product:" + product + ". ", ex);
                     developerMessage.append(ex.getDeveloperMessage());
-                    patchRequestDatabaseHandler.insertDataToErrorLog(patchName, testingState,
+                    patchRequestDatabaseHandler.insertDataToErrorLog(patch, testingState,
                             developerMessage.toString(), FAILURE_MESSAGE);
                     break;
                 }
@@ -283,11 +353,11 @@ class Signer {
                     (patchValidationStatus && updateValidateStatus.equals("N/A")) ||
                     (patchValidateStatus.equals("N/A") && updateValidationStatus)) {
                 developerMessage.append("Patch validated successfully. ");
-                LOG.info("Patch validated successfully, patch:" + patchName);
+                LOG.info("Patch validated successfully, patch:" + patch);
             }
 
             getAction(patchValidator, updateValidator, patchValidationStatus, updateValidationStatus,
-                    patchValidateStatus, updateValidateStatus, patchId, carbonVersion, developer, patchName,
+                    patchValidateStatus, updateValidateStatus, patchId, carbonVersion, developer, patch,
                     releasedState, developerMessage.toString());
 
             returnMessage.append(developerMessage);

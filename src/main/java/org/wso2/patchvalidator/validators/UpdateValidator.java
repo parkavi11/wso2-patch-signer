@@ -127,11 +127,11 @@ public class UpdateValidator {
         LOG.info("Channel :" +channel);
         if (channel.equals("full")){
             check = new File(productDownloadPath, "wso2" + product + ".zip").exists();
-            LOG.info("Validation Path"+ productDownloadPath);
+            LOG.info("Validation Path:"+ productDownloadPath);
         } else if (channel.equals("security" ) || channel.equals("fidelity") || channel.equals("cloud")){
             check = new File(productDownloadPath+channel, "wso2" + product + ".zip").exists();
             productDownloadPath =productDownloadPath+channel+"/";
-            LOG.info("Validation Path"+ productDownloadPath);
+            LOG.info("Validation Path:"+ productDownloadPath);
         }else {
             LOG.info("Channel is not available");
         }
