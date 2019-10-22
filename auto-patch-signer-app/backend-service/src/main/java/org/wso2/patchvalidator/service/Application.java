@@ -46,7 +46,7 @@ public class Application {
         MicroservicesRunner microservicesRunner = new MicroservicesRunner();
         LOG.info("MICROSERVICE DEPLOYING...");
         microservicesRunner
-                //.addGlobalRequestInterceptor(new UsernamePasswordSecurityInterceptor())
+                .addGlobalRequestInterceptor(new UsernamePasswordSecurityInterceptor())
                 .deploy(new SyncService())
                 .start();
     }

@@ -23,39 +23,6 @@
       </plugin>
     </plugins>
   </build>
-  <repositories>
-    <repository>
-      <releases>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>ignore</checksumPolicy>
-      </releases>
-      <id>wso2-nexus</id>
-      <name>WSO2 internal Repository</name>
-      <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
-    </repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>wso2-maven2-repository-1</id>
-      <url>http://dist.wso2.org/maven2</url>
-    </pluginRepository>
-    <pluginRepository>
-      <id>wso2-maven2-repository-2</id>
-      <url>http://dist.wso2.org/snapshots/maven2</url>
-    </pluginRepository>
-  </pluginRepositories>
-  <distributionManagement>
-    <repository>
-      <id>wso2-maven2-repository</id>
-      <name>WSO2 Maven2 Repository</name>
-      <url>scp://dist.wso2.org/home/httpd/dist.wso2.org/maven2/</url>
-    </repository>
-    <snapshotRepository>
-      <id>wso2-maven2-snapshot-repository</id>
-      <name>WSO2 Maven2 Snapshot Repository</name>
-      <url>scp://dist.wso2.org/home/httpd/dist.wso2.org/snapshots/maven2/</url>
-    </snapshotRepository>
-  </distributionManagement>
   <properties>
     <microservice.mainClass>org.wso2.patchvalidator.service.Application</microservice.mainClass>
   </properties>

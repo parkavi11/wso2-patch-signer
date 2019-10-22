@@ -18,16 +18,28 @@
 
 package org.wso2.patchvalidator.service;
 
-import java.util.Properties;
-import org.json.simple.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
-import org.wso2.patchvalidator.client.PmtClient;
-import org.wso2.patchvalidator.exceptions.ServiceException;
-import org.wso2.patchvalidator.revertor.Reverter;
+import org.slf4j.LoggerFactory;
+import org.wso2.patchvalidator.commiter.KeysCommitter;
+import org.wso2.patchvalidator.constants.Constants;
+import org.wso2.patchvalidator.productmapper.ProductSeparator;
+import org.wso2.patchvalidator.revertor.PatchRevertor;
 import org.wso2.patchvalidator.store.PatchRequestDatabaseHandler;
-import org.wso2.patchvalidator.util.LogBuilder;
-import org.wso2.patchvalidator.util.PropertyLoader;
+import org.wso2.patchvalidator.store.StagingDatabaseHandler;
+import org.wso2.patchvalidator.store.UatDatabaseHandler;
+import org.wso2.patchvalidator.validators.EmailSender;
+import org.wso2.patchvalidator.validators.PatchValidator;
+import org.wso2.patchvalidator.validators.UpdateValidator;
+import org.wso2.patchvalidator.validators.WumUcResponse;
 
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Properties;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -35,283 +47,443 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static org.wso2.patchvalidator.constants.Constants.FAILURE_MESSAGE;
-import static org.wso2.patchvalidator.constants.Constants.SUCCESS_MESSAGE;
-import static org.wso2.patchvalidator.service.Signer.sign;
-
 /**
  * <h1>SyncServices</h1>
  * All the endpoints in the microservice is defined here.
  *
- * @author Kosala Herath, Senthan Praanth, Pramodya Mendis, Thushanthan Amalanathan
+ * @author Kosala Herath,Senthan Praanth
  * @version 1.2
  * @since 2017-12-14
  */
-//@Path("/patch-validator")
 @Path("/request")
 public class SyncService {
 
-    private static Logger LOG = LogBuilder.getInstance().LOG;
-    private static Properties prop = PropertyLoader.getInstance().prop;
-    private static boolean signLock = true; //if this is true signing process will be stopped
+    private static final Logger LOG = LoggerFactory.getLogger(SyncService.class);
 
-    /**
-     * Main microservice end point.
-     * Validate and Sign patches.
-     *
-     * @return response message
-     */
+    private boolean patchValidationStatus = true;
+    private boolean updateValidationStatus = true;
+    private Properties prop = new Properties();
+    private WumUcResponse wumUcResponse = WumUcResponse.getInstance();
+
     @POST
-    @Path("/sign")
+    @Path("/service")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response postRequest() {
+    public Response postRequest(@FormParam("patchId") String patchId, @FormParam("version") String version,
+                                @FormParam("state") Integer state, @FormParam("product") String productNameList,
+                                @FormParam("productType") String productPackType, @FormParam("developedBy") String developedBy)
+            throws IOException, InterruptedException, SQLException {
 
-        StringBuilder returnMessage;
-        if (!signLock) {
-            returnMessage = sign();
-        } else {
-            returnMessage = new StringBuilder().append("Cannot sign, UAT build process has started.");
-            LOG.info(returnMessage.toString() + " signLock:" + signLock);
+        LOG.info("******************************************************************");
+        LOG.info("                         NEW REQUEST                              ");
+        LOG.info("******************************************************************");
+        LOG.info("PATCH OR UPDATE SIGN REQUEST RECEIVED... >>> PATCH ID : " + patchId + ": PRODUCT LIST : "
+                + productNameList);
+
+        String patchValidateStatus = "N/A";
+        String updateValidateStatus = "N/A";
+        String status = "";
+
+        ProductSeparator productSeparator = new ProductSeparator();
+        String productList = productSeparator.splitProduct(productNameList);
+        String[] productNameArray = productList.split(",");
+
+        PatchValidator objPatchValidator = new PatchValidator();
+        UpdateValidator objUpdateValidator = new UpdateValidator();
+
+        LOG.info("VALIDATION PROCESS STARTED FOR EACH PRODUCT...");
+        prop.load(PatchValidator.class.getClassLoader().getResourceAsStream("application.properties"));
+
+        for (String product : productNameArray) {
+            LOG.info(
+                    "- - - - - - - - - - - - - - - - - - " + product + " - - - - - - - - - - - - - - - - - " + "- - -");
+
+            PatchRequestDatabaseHandler patchRequestDatabaseHandler = new PatchRequestDatabaseHandler();
+            int productType = patchRequestDatabaseHandler.getProductType(product);
+
+            //insert requests to register
+            patchRequestDatabaseHandler
+                    .insertDataToTrackDatabase(patchId, version, state, productType, product, developedBy, status);
+
+            //check product type ( 1 = patch / 2 = update / 3 = patch and update )
+            if (productType == 1) {   //patch validation
+                LOG.info("THIS IS A ONLY PATCH VALIDATION AND PROCESS STARTED...");
+                patchValidateStatus = objPatchValidator
+                        .zipPatchValidate(patchId, version, state, productType, product, developedBy, productNameArray);
+                LOG.info("PATCH VALIDATION FINISHED...");
+                LOG.info("PATCH VALIDATION STATUS >>> " + patchValidateStatus);
+
+                version = getString(version);
+                boolean isSuccess = false;
+                if ((patchValidateStatus.trim().equals(Constants.SUCCESSFULLY_VALIDATED))) {
+                    LOG.info("PATCH VALIDATION SUCCESSFUL");
+                    isSuccess = true;
+                    patchValidationStatus = true;
+
+                } else {
+                    patchValidationStatus = false;
+                }
+                changeValidateStatus(patchId, product, patchRequestDatabaseHandler, isSuccess);
+                version = prop.getProperty(version);
+            } else if (productType == 2) {    //update validation
+                LOG.info("THIS IS A ONLY UPDATE VALIDATION AND PROCESS STARTED...");
+                updateValidateStatus = objUpdateValidator.zipUpdateValidate(patchId, version, productType, product);
+                LOG.info("UPDATE VALIDATION FINISHED...");
+                //                LOG.info("UPDATE VALIDATION STATUS >>> " + updateValidateStatus);
+                LOG.info("UPDATE VALIDATION ExitCode >>> " + wumUcResponse.getExitCode());
+                LOG.info("UPDATE VALIDATION STATUS >>> " + wumUcResponse.getResponse());
+
+                version = getString(version);
+
+                String statusOfUpdateValidation =
+                        "Validating update ...'" + prop.getProperty("orgUpdate") + version + "-" + patchId + "' "
+                                + Constants.UPDATE_VALIDATED;
+                int exitCode = wumUcResponse.getExitCode();
+                //                if (updateValidateStatus.equals(statusOfUpdateValidation)) {
+                //                    LOG.info("UPDATE VALIDATION SUCCESSFUL");
+                //                    updateValidationStatus = true;
+                //
+                //                } else {
+                //                    updateValidateStatus = updateValidateStatus + "-" + product;
+                //                    updateValidationStatus = false;
+                //                    version = prop.getProperty(version);
+                //                    changeValidateStatus(patchId, product, patchRequestDatabaseHandler, false);
+                //                    break;
+                //                }
+
+                if (exitCode == 0) {
+                    LOG.info("UPDATE VALIDATION SUCCESSFUL");
+                    updateValidationStatus = true;
+
+                } else {
+                    //                    updateValidateStatus = updateValidateStatus + "-" + product;
+                    updateValidateStatus = wumUcResponse.getResponse() + "-" + product;
+                    updateValidationStatus = false;
+                    version = prop.getProperty(version);
+                    changeValidateStatus(patchId, product, patchRequestDatabaseHandler, false);
+                    break;
+                }
+                changeValidateStatus(patchId, product, patchRequestDatabaseHandler, true);
+                version = prop.getProperty(version);
+            } else if (productType == 3) {  //patch and update validation
+                LOG.info("THIS IS A PATCH AND UPDATE VALIDATION AND PROCESS STARTED...");
+
+                LOG.info("PATCH VALIDATION STARTED...");
+                patchValidateStatus = objPatchValidator
+                        .zipPatchValidate(patchId, version, state, productType, product, developedBy, productNameArray);
+                LOG.info("PATCH VALIDATION FINISHED...");
+
+                LOG.info("UPDATE VALIDATION STARTED...");
+                updateValidateStatus = objUpdateValidator.zipUpdateValidate(patchId, version, productType, product);
+                LOG.info("UPDATE VALIDATION FINISHED...");
+
+                version = getString(version);
+                LOG.info("PATCH VALIDATION STATUS >>> " + patchValidateStatus);
+                LOG.info("UPDATE VALIDATION ExitCode >>> " + wumUcResponse.getExitCode());
+                LOG.info("UPDATE VALIDATION STATUS >>> " + wumUcResponse.getResponse());
+                // LOG.info("UPDATE VALIDATION STATUS >>> " + updateValidateStatus);
+
+                String statusOfUpdateValidation =
+                        "Validating update ...'" + prop.getProperty("orgUpdate") + version + "-" + patchId + "' "
+                                + Constants.UPDATE_VALIDATED;
+
+                boolean isSuccessPatch = false;
+                if ((patchValidateStatus.trim().equals(Constants.SUCCESSFULLY_VALIDATED))) {
+                    LOG.info("PATCH VALIDATION SUCCESSFUL IN P&U TYPE");
+                    patchValidationStatus = true;
+                    isSuccessPatch = true;
+
+                } else {
+                    patchValidationStatus = false;  //insert break statement
+                }
+                //                if (updateValidateStatus.equals(statusOfUpdateValidation)) {
+                //                    LOG.info("UPDATE VALIDATION SUCCESSFUL IN P&U TYPE");
+                //                    updateValidationStatus = true;
+                //                } else {
+                //                    updateValidateStatus = updateValidateStatus + "-" + product;
+                //                    updateValidationStatus = false;
+                //                    version = prop.getProperty(version);
+                //                    changeValidateStatus(patchId, product, patchRequestDatabaseHandler, false);
+                //                    version = prop.getProperty(version);
+                //                    break;
+                //                }
+                int exitCode = wumUcResponse.getExitCode();
+                if (exitCode == 0) {
+                    LOG.info("UPDATE VALIDATION SUCCESSFUL IN P&U TYPE");
+                    updateValidationStatus = true;
+                } else {
+                    //                    updateValidateStatus = updateValidateStatus + "-" + product;
+                    updateValidateStatus = wumUcResponse.getResponse() + "-" + product;
+                    updateValidationStatus = false;
+                    version = prop.getProperty(version);
+                    changeValidateStatus(patchId, product, patchRequestDatabaseHandler, false);
+                    version = prop.getProperty(version);
+                    break;
+                }
+
+                changeValidateStatus(patchId, product, patchRequestDatabaseHandler, isSuccessPatch);
+                version = prop.getProperty(version);
+            } else {
+                patchValidateStatus = product + " : Product Type Error. Please update database for this product";
+                updateValidateStatus = product + " : Product Type Error. Please update database for this product";
+                patchValidationStatus = false;
+                updateValidationStatus = false;
+                version = prop.getProperty(version);
+
+                changeValidateStatus(patchId, product, patchRequestDatabaseHandler, false);
+                break;
+            }
         }
-        return Response.ok(returnMessage.toString(), MediaType.TEXT_PLAIN)
-                .header("Access-Control-Allow-Credentials", true)
-                .build();
+
+        LOG.info("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
+        LOG.info("  PATCH VALIDATION SUCCESS : " + patchValidationStatus);
+        LOG.info(" UPDATE VALIDATION SUCCESS : " + updateValidationStatus);
+        LOG.info("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
+
+        String[] validationResult = getAction(objPatchValidator, objUpdateValidator, patchValidationStatus,
+                updateValidationStatus, patchValidateStatus, updateValidateStatus, patchId, version, developedBy);
+
+        patchValidateStatus = validationResult[0];
+        updateValidateStatus = validationResult[1];
+
+        return Response.ok("------ Validation Process Finished ------#Patch Validate Status : #" + patchValidateStatus
+                + "##updateValidateStatus : #" + updateValidateStatus, MediaType.TEXT_PLAIN)
+                .header("Access-Control-Allow-Credentials", true).build();
+
     }
 
-    /**
-     * Microservice end point.
-     * Reverting signed patches.
-     *
-     * @param patchName full patch name eg:WSO2-CARBON-PATCH-4.4.0-1001
-     * @return response message
-     */
     @POST
     @Path("/revert")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response revertPatch(@FormParam("patch") String patchName) {
+    public Response revertPatch(@FormParam("patchId") String patchId, @FormParam("version") String version,
+                                @FormParam("onlySVNRevert") boolean onlySVNRevert) {
 
-        PatchRequestDatabaseHandler patchRequestDatabaseHandler = new PatchRequestDatabaseHandler();
-        String version;
-        String patchId;
-        String message;
+        LOG.info("PATCH OR UPDATE REVERTING REQUEST RECEIVED >>> PATCH ID : " + patchId);
+
+        String patchUrl;
+        String updateUrl;
+        String resUatDatabase;
+        String resStagingDatabase;
+        String errorMessage = null;
+        int patchIdInt = 0;
 
         try {
-            String[] tempArr = patchName.replace("WSO2-CARBON-PATCH-", "").split("-");
-            version = tempArr[0];
-            patchId = tempArr[1];
-        } catch (Exception ex) {
-            message = "Reverting Process Failed. Patch name \" " + patchName + "\" is not in the valid format" +
-                    " (Valid format eg:\"WSO2-CARBON-PATCH-4.4.0-1001\").";
-            LOG.error("Exception occurred, patch name is not in valid format. patch:" + patchName, ex);
-            return Response.ok(message, MediaType.TEXT_PLAIN)
-                    .header("Access-Control-Allow-Credentials", true)
-                    .build();
+            if (version == null || patchId == null) {
+                throw new IOException("PARAMETERS ARE NOT RECEIVED...");
+            }
+            patchUrl = version + "/patches/patch";
+            updateUrl = version + "/updates/update";
+
+            patchUrl = patchUrl + patchId + "/";
+            updateUrl = updateUrl + patchId + "/";
+
+            patchIdInt = Integer.parseInt(patchId);
+
+            PatchRevertor patchRevertor = new PatchRevertor();
+            String resSvnPatch = patchRevertor.unlockAndDeleteSvnRepository(patchUrl, patchId);
+            String resSvnUpdate = patchRevertor.unlockAndDeleteSvnRepository(updateUrl, patchId);
+            if (!resSvnPatch.equals("REVERTED") && !resSvnUpdate.equals("REVERTED")) {
+                errorMessage = "\nNo Repository in SVN patch or update.";
+            }
+        } catch (IOException e) {
+            LOG.error(e.getMessage());
+            errorMessage = e.getMessage();
         }
 
-        try {
-            Reverter.patchRevert(version, patchId);
-            message = "\"" + patchName + "\" reverted Successfully.";
-            patchRequestDatabaseHandler.insertDataToErrorLog(patchName, prop.getProperty("pmtLcTestingState"), message,
-                    SUCCESS_MESSAGE);
-            LOG.info(message);
-            return Response.ok(message, MediaType.TEXT_PLAIN)
-                    .header("Access-Control-Allow-Credentials", true)
+        //delete from UAT database
+        if (errorMessage == null && !onlySVNRevert) {
+            //delete from UAT database
+            UatDatabaseHandler uatDatabaseHandler = new UatDatabaseHandler();
+            resUatDatabase = uatDatabaseHandler.deletePatch(patchIdInt);
+
+            //delete from Staging database
+            StagingDatabaseHandler stagingDatabaseHandler = new StagingDatabaseHandler();
+            resStagingDatabase = stagingDatabaseHandler.deletePatch(patchIdInt);
+
+            if (resStagingDatabase == null || resUatDatabase == null) {
+                errorMessage = "\nError at database data deleting process.";
+            }
+        } else if (errorMessage != null) {
+            errorMessage = errorMessage + "\nAborted from database deleting due to SVN error.";
+        }
+
+        if (errorMessage == null) {
+            LOG.info("REVERTING PROCESS FINISHED SUCCESSFULLY...");
+            return Response.ok("Reverting Process Finished Successfully\n", MediaType.TEXT_PLAIN)
+                    .header("Access-Control-Allow-Credentials", true).build();
+        } else {
+            LOG.error("REVERTING PROCESS FAILED. PROCESS END... " + errorMessage);
+            return Response.ok("Reverting Process Failed. \n" + errorMessage, MediaType.TEXT_PLAIN)
+                    .header("Access-Control-Allow-Credentials", true).build();
+        }
+    }
+
+    @POST
+    @Path("/fetchData")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response fetchProductNames() throws SQLException {
+
+        LOG.info("PRODUCT LIST REQUESTED FROM APP...");
+
+        JsonArray productList;
+
+        PatchRequestDatabaseHandler pmtData = new PatchRequestDatabaseHandler();
+        productList = pmtData.getProductList();
+        JsonObject productListFirstObject = (productList.get(0)).getAsJsonObject();
+
+        if (productListFirstObject.get("value").toString().equals("No Data")) {
+            LOG.error("PRODUCT LIST RETRIEVING PROCESS HAS OCCURRED A PROBLEM...");
+            return Response.ok(productList, MediaType.TEXT_PLAIN).header("Access-Control-Allow-Credentials", true)
                     .build();
-        } catch (ServiceException ex) {
-            message = "\"" + patchName + "\" reverting failed, " + ex.getDeveloperMessage();
-            patchRequestDatabaseHandler.insertDataToErrorLog(patchName, prop.getProperty("pmtLcAdminStgState"),
-                    ex.getDeveloperMessage(), FAILURE_MESSAGE);
-            LOG.error("Exception occurred when reverting, patchId:" + patchId + " version:" + version, ex);
-            return Response.ok(message, MediaType.TEXT_PLAIN)
-                    .header("Access-Control-Allow-Credentials", true)
+        } else {
+            LOG.error("PRODUCT LIST RETRIEVING PROCESS FINISHED SUCCESSFULLY...");
+            return Response.ok(productList, MediaType.TEXT_PLAIN).header("Access-Control-Allow-Credentials", true)
                     .build();
         }
     }
 
-    /**
-     * Microservice end point.
-     * Add new product to the product details table of patch validation database.
-     *
-     * @param productName         name of the product
-     * @param productVersion      version of the product
-     * @param carbonVersion       carbon version
-     * @param kernelVersion       kernel version
-     * @param productAbbreviation abbreviation of the product
-     * @param wumSupported        is this product supported by latest wum version
-     * @param type                patch type (patch, update, patch and update)
-     * @param productUrl          atuwa product url
-     * @return response message
-     */
+    //add new product request
     @POST
     @Path("/addProduct")
     @Produces(MediaType.TEXT_PLAIN)
     public Response addProduct(@FormParam("product") String productName,
-                               @FormParam("productVersion") String productVersion,
-                               @FormParam("carbonVersion") String carbonVersion,
+                               @FormParam("productVersion") String productVersion, @FormParam("carbonVersion") String carbonVersion,
                                @FormParam("kernelVersion") String kernelVersion,
                                @FormParam("productAbbreviation") String productAbbreviation,
-                               @FormParam("WUMSupported") Integer wumSupported,
-                               @FormParam("type") Integer type,
-                               @FormParam("productUrl") String productUrl) {
+                               @FormParam("WUMSupported") Integer wumSupported, @FormParam("type") Integer type) {
 
+        LOG.info("ADDING PRODUCT REQUESTED FROM APP...");
         try {
             PatchRequestDatabaseHandler patchRequestDatabaseHandler = new PatchRequestDatabaseHandler();
             //insert requests to database
-            patchRequestDatabaseHandler.insertProductToTrackDatabase(productName, productVersion, carbonVersion,
-                    kernelVersion, productAbbreviation, wumSupported, type, productUrl);
-            LOG.error("Product successfully added to the database, productName:" + productName + " productVersion:" +
-                    productVersion + " carbonVersion:" + carbonVersion + " kernelVersion:" + kernelVersion +
-                    " productAbbreviation:" + productAbbreviation + " wumSupported:" + wumSupported +
-                    " type:" + type + " productUrl:" + productUrl);
+            patchRequestDatabaseHandler
+                    .insertProductToTrackDatabase(productName, productVersion, carbonVersion, kernelVersion,
+                            productAbbreviation, wumSupported, type);
+            LOG.error("PRODUCT SUCCESSFULLY ADDED TO DATABASE...");
             return Response.ok("Adding product to DB Finished Successfully\n", MediaType.TEXT_PLAIN)
-                    .header("Access-Control-Allow-Credentials", true)
-                    .build();
-        } catch (ServiceException ex) {
-            LOG.error("Exception occurred when adding product, productName:" + productName + " productVersion:" +
-                    productVersion + " carbonVersion:" + carbonVersion + " kernelVersion:" + kernelVersion +
-                    " productAbbreviation:" + productAbbreviation + " wumSupported:" + wumSupported +
-                    " type:" + type + " productUrl:" + productUrl, ex);
-            return Response.ok(ex.getDeveloperMessage(), MediaType.TEXT_PLAIN)
-                    .header("Access-Control-Allow-Credentials", true)
-                    .build();
+                    .header("Access-Control-Allow-Credentials", true).build();
+        } catch (SQLException e) {
+            LOG.error(e.getMessage());
+            return Response.ok("Exception occurred when adding product\n", MediaType.TEXT_PLAIN)
+                    .header("Access-Control-Allow-Credentials", true).build();
         }
     }
 
-    /**
-     * Microservice end point.
-     * Clearing TEMP_JAR_TIMESTAMP table.
-     * Updating latest timestamp in JAR_TIMESTAMP table.
-     *
-     * @return response message
-     */
-    @POST
-    @Path("/clearTemp")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response clearTempJarTimestamp() {
+    private void setCCList(@FormParam("developedBy") String developedBy, ArrayList<String> toList,
+                           ArrayList<String> ccList) {
 
-        PatchRequestDatabaseHandler patchRequestDatabaseHandler = new PatchRequestDatabaseHandler();
-        String message;
-
-        try {
-            patchRequestDatabaseHandler.clearTempJarTimestampTable();
-            message = "TEMP_JAR_TIMESTAMP table cleared Successfully.";
-            LOG.info(message);
-            return Response.ok(message, MediaType.TEXT_PLAIN)
-                    .header("Access-Control-Allow-Credentials", true)
-                    .build();
-        } catch (ServiceException ex) {
-            message = "Clearing TEMP_JAR_TIMESTAMP table failed, " + ex.getDeveloperMessage();
-            LOG.error("Exception occurred when clearing TEMP_JAR_TIMESTAMP table.", ex);
-            return Response.ok(message, MediaType.TEXT_PLAIN)
-                    .header("Access-Control-Allow-Credentials", true)
-                    .build();
-        }
+        toList.add(developedBy);
+        ccList.add(prop.getProperty("ccList1"));
+        ccList.add(prop.getProperty("ccList2"));
     }
 
-    /**
-     * Microservice end point.
-     * Stop and start signing process
-     *
-     * @param lock if lock is true stop signing, if lock is false start signing
-     * @return response message
-     */
-    @POST
-    @Path("/lockSigning")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response lockSigning(@FormParam("lock") Boolean lock) {
+    private String getString(@FormParam("version") String version) {
 
-        String message;
-        signLock = lock;
-        if (signLock) {
-            message = "Signing process stopped successfully.";
+        switch (version) {
+            case "wilkes":
+                version = "4.4.0";
+                break;
+            case "hamming":
+                version = "5.0.0";
+                break;
+            case "turing":
+                version = "4.2.0";
+                break;
+            default:
+                LOG.error("Error in version of the product");
+        }
+        return version;
+    }
+
+    private void changeValidateStatus(@FormParam("patchId") String patchId, String product,
+                                      PatchRequestDatabaseHandler insertRequestParametersToDB, boolean isSuccess) throws SQLException {
+
+        if (isSuccess) {
+            LOG.info("Process Successful and status updated..!");
+            insertRequestParametersToDB.updatePostRequestStatus(product, patchId, Constants.SUCCESS_STATE);
         } else {
-            message = "Signing process started successfully.";
-        }
-        LOG.info(message);
-        return Response.ok(message, MediaType.TEXT_PLAIN)
-                .header("Access-Control-Allow-Credentials", true)
-                .build();
-    }
-
-    /**
-     * Microservice end point.
-     * Get patch information.
-     *
-     * @param patchName full patch name eg:WSO2-CARBON-PATCH-4.4.0-1001
-     * @return patch info json
-     */
-    @POST
-    @Path("/getPatchInfo")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response getPatchInfo(@FormParam("patch") String patchName) {
-
-        String version;
-        String patchId;
-        String message;
-
-        try {
-            String[] tempArr = patchName.replace("WSO2-CARBON-PATCH-", "").split("-");
-            version = tempArr[0];
-            patchId = tempArr[1];
-        } catch (Exception ex) {
-            LOG.error("Exception occurred, patch name is not in valid format. patch:" + patchName, ex);
-            return Response.ok("Patch name is not valid", MediaType.TEXT_PLAIN)
-                    .header("Access-Control-Allow-Credentials", true)
-                    .build();
-        }
-
-        try {
-            JSONObject patchInfo = PmtClient.getPatchInfo(version, patchId);
-            LOG.info("Patch info retrieved successfully. patch:" + patchName);
-            return Response.ok(patchInfo, MediaType.APPLICATION_JSON)
-                    .header("Access-Control-Allow-Credentials", true)
-                    .build();
-        } catch (ServiceException ex) {
-            message = "\"" + patchName + "\" retrieving patch info failed, " + ex.getDeveloperMessage();
-            LOG.error("Exception occurred when reverting, patchId:" + patchId + " version:" + version, ex);
-            return Response.ok(message, MediaType.TEXT_PLAIN)
-                    .header("Access-Control-Allow-Credentials", true)
-                    .build();
+            LOG.info("Process finished.");
+            insertRequestParametersToDB.updatePostRequestStatus(product, patchId, Constants.VALIDATION_FAIL_STATE);
         }
     }
 
-    /**
-     * Microservice end point.
-     * Update PMT state to Released state.
-     *
-     * @param patchName full patch name eg:WSO2-CARBON-PATCH-4.4.0-1001
-     * @return PMT state change status
-     */
-    @POST
-    @Path("/updatePmtToReleased")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response updatePmtToReleased(@FormParam("patch") String patchName,
-                                        @FormParam("releasedState") String releasedState) {
+    private String[] getAction(PatchValidator objPatchValidator, UpdateValidator objUpdateValidator,
+                               boolean patchValidationStatus, boolean updateValidationStatus, String patchValidateStatus,
+                               String updateValidateStatus, String patchId, String version, String developedBy) throws IOException {
 
-        String message;
+        EmailSender checkValidity = new EmailSender();
+        ArrayList<String> toList = new ArrayList<>();
+        ArrayList<String> ccList = new ArrayList<>();
 
-        try {
-            boolean isUpdatedToReleased = PmtClient.updatePmtStateAfterBuild(patchName, releasedState);
-            if(isUpdatedToReleased) {
-                LOG.info("PMT LC state updated successfully. patch:" + patchName + " releasedState:" + releasedState);
-                return Response.ok("Successfully moved to " + releasedState + " state", MediaType.TEXT_PLAIN)
-                        .header("Access-Control-Allow-Credentials", true)
-                        .build();
-            }else{
-                LOG.info("Updating PMT LC state failed. patch:" + patchName + " releasedState:" + releasedState);
-                return Response.ok("Updating to " + releasedState + " failed", MediaType.TEXT_PLAIN)
-                        .header("Access-Control-Allow-Credentials", true)
-                        .build();
-            }
-        } catch (ServiceException ex) {
-            message = "\"" + patchName + "\" Updating PMT LC state to \"" + releasedState + "\" failed, " +
-                    ex.getDeveloperMessage();
-            LOG.error("Exception occurred when updating PMT LC state, patch:" + patchName + " state:" + releasedState,
-                    ex);
-            return Response.ok(message, MediaType.TEXT_PLAIN)
-                    .header("Access-Control-Allow-Credentials", true)
-                    .build();
+        switch (version) {
+            case "wilkes":
+                version = "4.4.0";
+                break;
+            case "hamming":
+                version = "5.0.0";
+                break;
+            case "turing":
+                version = "4.2.0";
+                break;
         }
-    }
 
+        if (patchValidationStatus && updateValidateStatus.equals("N/A")) {
+            patchValidateStatus = patchValidateStatus + " and " + KeysCommitter
+                    .validateKeysCommit((objPatchValidator.patchUrl.split("carbon/")[1]),
+                            objPatchValidator.patchDestination);
+            setCCList(developedBy, toList, ccList);
+            checkValidity.executeSendMail(toList, ccList, patchId, version, patchValidateStatus, "patch");
+        } else if (!patchValidationStatus && updateValidateStatus.equals("N/A")) {
+            setCCList(developedBy, toList, ccList);
+            checkValidity.executeSendMail(toList, ccList, patchId, version, patchValidateStatus, "patch");
+        } else if (updateValidationStatus && patchValidateStatus.equals("N/A")) {
+            updateValidateStatus = updateValidateStatus + " " + KeysCommitter
+                    .validateKeysCommit((objUpdateValidator.updateUrl.split("carbon/")[1]),
+                            objUpdateValidator.updateDestination);
+            setCCList(developedBy, toList, ccList);
+            checkValidity.executeSendMail(toList, ccList, patchId, version, updateValidateStatus, "update");
+        } else if (!updateValidationStatus && patchValidateStatus.equals("N/A")) {
+            setCCList(developedBy, toList, ccList);
+            checkValidity.executeSendMail(toList, ccList, patchId, version, updateValidateStatus, "update");
+        } else if (patchValidationStatus && updateValidationStatus) {
+            patchValidateStatus = patchValidateStatus + " and " + KeysCommitter
+                    .validateKeysCommit((objPatchValidator.patchUrl.split("carbon/")[1]),
+                            objPatchValidator.patchDestination);
+            updateValidateStatus = updateValidateStatus + " " + KeysCommitter
+                    .validateKeysCommit((objUpdateValidator.updateUrl.split("carbon/")[1]),
+                            objUpdateValidator.updateDestination);
+            setCCList(developedBy, toList, ccList);
+            checkValidity.executeSendMailPatchAndUpdate(toList, ccList, patchId, version, patchValidateStatus,
+                    updateValidateStatus);
+        } else if (!patchValidationStatus && updateValidationStatus) {
+            updateValidateStatus = updateValidateStatus + " " + KeysCommitter
+                    .validateKeysCommit((objUpdateValidator.updateUrl.split("carbon/")[1]),
+                            objUpdateValidator.updateDestination);
+            setCCList(developedBy, toList, ccList);
+            checkValidity.executeSendMailPatchAndUpdate(toList, ccList, patchId, version, patchValidateStatus,
+                    updateValidateStatus);
+        } else if (patchValidationStatus && !updateValidationStatus) {
+            patchValidateStatus = patchValidateStatus + " and " + KeysCommitter
+                    .validateKeysCommit((objPatchValidator.patchUrl.split("carbon/")[1]),
+                            objPatchValidator.patchDestination);
+            setCCList(developedBy, toList, ccList);
+            checkValidity.executeSendMailPatchAndUpdate(toList, ccList, patchId, version, patchValidateStatus,
+                    updateValidateStatus);
+        } else {
+            setCCList(developedBy, toList, ccList);
+            checkValidity.executeSendMailPatchAndUpdate(toList, ccList, patchId, version, patchValidateStatus,
+                    updateValidateStatus);
+        }
+        String[] result = { patchValidateStatus, updateValidateStatus };
+
+        //delete downloaded files
+        String destFilePath = prop.getProperty("destFilePath");
+        FileUtils.deleteDirectory(new File(destFilePath));
+
+        return result;
+    }
 }
+
+
+
+
+

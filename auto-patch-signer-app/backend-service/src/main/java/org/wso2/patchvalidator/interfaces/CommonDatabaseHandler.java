@@ -3,7 +3,6 @@ package org.wso2.patchvalidator.interfaces;
 import com.google.gson.JsonArray;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 /**
  * <h1>Common Database Handler</h1>
@@ -13,7 +12,6 @@ import java.util.Map;
  * @version 1.3
  * @since 2018-12-14
  */
-
 public interface CommonDatabaseHandler {
 
     int getProductType(String product) throws SQLException;
@@ -29,9 +27,5 @@ public interface CommonDatabaseHandler {
 
     void insertProductToTrackDatabase(String productName, String productVersion, String carbonVersion,
                                       String kernelVersion, String productAbbreviation,
-                                      int wumSupported, int type, String productUrl) throws SQLException;
-
-    Map<String, String> getProductDetails(String abbreviation) throws SQLException;
-
-    String getProductURL(String productAbbreviation) throws SQLException;
+                                      int wumSupported, int type) throws SQLException;
 }
