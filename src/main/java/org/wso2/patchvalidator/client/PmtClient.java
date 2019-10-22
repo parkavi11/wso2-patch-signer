@@ -54,7 +54,7 @@ public class PmtClient {
                 return jsonObj;
             } else {
                 throw new ServiceException("Error occurred when retrieving PMT patch Json, version:" + version +
-                        " patchId:" + patchId + " url: " + httpUri + "statusCode:" + statusCode,
+                        " patchId:" + patchId + " url: " + httpUri + ", statusCode:" + statusCode,
                         "Cannot retrieve patch information from PMT for the patch \"" + version + "-"
                                 + patchId + "\" , Please contact admin.");
             }

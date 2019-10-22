@@ -36,6 +36,7 @@ public class PatchInfo {
     private String wumProductsJSON;
     private String patchLifeCycleState;
     private String wumStatus;
+    private String wumReleasedTimestamp;
 
     //constructor
     public PatchInfo(JSONArray jsonArray) {
@@ -54,6 +55,8 @@ public class PatchInfo {
                     throw new ServiceException("wum_productsJSON property is not valid in the pmt patch json,",
                             "Products json field is not valid. Please amend and re-submit.", ex);
                 }
+            } else if (element.get("name").equals("wum_releasedTimestamp")) {
+                this.setWumReleasedTimestamp(Util.createListFromJsonArray((JSONArray) element.get("value")).get(0));
             } else if (element.get("name").equals("overview_compatibleProducts")) {
                 this.setOverviewCompatibleProducts(Util.createListFromJsonArray((JSONArray) element.get("value")));
             } else if (element.get("name").equals("patchInformation_jarsInvolved")) {
@@ -182,7 +185,12 @@ public class PatchInfo {
         return wumStatus;
     }
 
+    public String getWumReleasedTimestamp() {
+        return wumReleasedTimestamp;
+    }
+
     private void setWumStatus(String wumStatus) {
         this.wumStatus = wumStatus;
     }
+    private void setWumReleasedTimestamp(String wumReleasedTimestamp) {this.wumReleasedTimestamp = wumReleasedTimestamp;}
 }
