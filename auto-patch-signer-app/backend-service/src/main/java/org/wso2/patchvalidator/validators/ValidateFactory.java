@@ -23,10 +23,6 @@ import org.wso2.patchvalidator.interfaces.CommonValidator;
 /**
  * <h1>Validate Factory</h1>
  * get common validation
- *
- * @author Kosala Herath
- * @version 1.3
- * @since 2017-12-14
  */
 abstract class ValidateFactory {
 

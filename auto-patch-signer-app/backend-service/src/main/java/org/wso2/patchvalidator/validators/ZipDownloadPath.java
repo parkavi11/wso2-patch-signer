@@ -17,30 +17,29 @@
  */
 package org.wso2.patchvalidator.validators;
 
+import org.wso2.patchvalidator.service.SyncService;
+
+import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.Properties;
-import org.slf4j.Logger;
-import org.wso2.patchvalidator.util.LogBuilder;
-import org.wso2.patchvalidator.util.PropertyLoader;
 
 /**
  * <h1>Zip Download Path</h1>
  * Define zip file download path and file paths
- *
- * @author Kosala Herath, Senthan Prasanth, Thushanthan
- * @version 1.2
- * @since 2017-12-14
  */
 class ZipDownloadPath {
 
     private String type;
     private String version;
     private String id;
-    private static Properties prop = PropertyLoader.getInstance().prop;
-    private static final Logger LOG = LogBuilder.getInstance().LOG;
+    private String destFilePath;
+    private String url;
 
-    public ZipDownloadPath(String type, String version, String id)  {
+    private Properties prop = new Properties();
 
+    public ZipDownloadPath(String type, String version, String id) throws IOException {
 
+        prop.load(SyncService.class.getClassLoader().getResourceAsStream("application.properties"));
         this.type = type;
         this.version = version;
         this.id = id;
@@ -53,25 +52,25 @@ class ZipDownloadPath {
 
     public String getUrl() {
 
-        version = getCarbonVersionWord(version);
-        String url;
+        version = prop.getProperty(version);
         if (type.equals("patch")) {
-            return url = prop.getProperty("staticURL") + version + "/" + type + "es/" + type + id + "/";
+
+            return url = prop.getProperty("staticURLWSO2") + version + "/" + type + "es/" + type + id + "/";
         } else {
-            return url = prop.getProperty("staticURL") + version + "/" + type + "s/" + type + id + "/";
+            return url = prop.getProperty("staticURLWSO2") + version + "/" + type + "s/" + type + id + "/";
         }
     }
 
     public String getZipDownloadDestination() {
 
-        version = getCarbonVersionWord(version);
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        String timeStamp = String.valueOf(timestamp.getTime());
         version = prop.getProperty(version);
-        return getDestFilePath() + version + "/" + type + id + "/";
+        return getDestFilePath() + version + "/" + timeStamp + "/" + type + id + "/";
     }
 
     public String getFilepath() {
 
-        version = prop.getProperty(version);
         if (type.equals("patch")) {
             return getZipDownloadDestination() + prop.getProperty("orgPatch") + version + "-" + id + ".zip";
         } else {
@@ -81,27 +80,13 @@ class ZipDownloadPath {
 
     public String getUnzippedFolderPath() {
 
-        String version1 = version;
         if (type.equals("patch")) {
-            return getZipDownloadDestination() + prop.getProperty("orgPatch") + version1 + "-" + id + "/";
+            version = prop.getProperty(version);
+            return getZipDownloadDestination() + prop.getProperty("orgPatch") + version + "-" + id + "/";
         } else {
-            return getZipDownloadDestination() + prop.getProperty("orgUpdate") + version1 + "-" + id + "/";
+            version = prop.getProperty(version);
+            return getZipDownloadDestination() + prop.getProperty("orgUpdate") + version + "-" + id + "/";
         }
-    }
-
-    private String getCarbonVersionWord(String version) {
-        switch (version) {
-            case "4.4.0":
-                version = "wilkes";
-                break;
-            case "5.0.0":
-                version = "hamming";
-                break;
-            case "4.2.0":
-                version = "turing";
-                break;
-        }
-        return version;
     }
 }
 

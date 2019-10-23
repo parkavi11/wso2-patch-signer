@@ -13,6 +13,13 @@
  */
 package org.wso2.patchvalidator.validators;
 
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wso2.patchvalidator.interfaces.CommonValidator;
+import org.wso2.patchvalidator.store.PatchRequestDatabaseHandler;
+
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -20,37 +27,25 @@ import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Properties;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.wso2.patchvalidator.constants.Constants;
-import org.wso2.patchvalidator.exceptions.ServiceException;
-import org.wso2.patchvalidator.interfaces.CommonValidator;
-import org.wso2.patchvalidator.store.PatchRequestDatabaseHandler;
-import org.wso2.patchvalidator.util.LogBuilder;
-import org.wso2.patchvalidator.util.PropertyLoader;
-import org.wso2.patchvalidator.util.Util;
-
-import static org.wso2.patchvalidator.constants.Constants.*;
-import static org.wso2.patchvalidator.validators.UpdateJarValidator.validateUpdateFiles;
 
 /**
  * <h1>Update Validator</h1>
  * Validate updates considering all the file structure and content.
- *
- * @author Kosala Herath, Senthan Prasanth, Thushanthan Amalanathan
- * @version 1.2
- * @since 2017-12-14
  */
 
 public class UpdateValidator {
-
-    private static Properties prop = PropertyLoader.getInstance().prop;
-    private static final Logger LOG = LogBuilder.getInstance().LOG;
-
+    private WumUcResponse wumUcResponse = WumUcResponse.getInstance();
+    private static final Logger LOG = LoggerFactory.getLogger(UpdateValidator.class);
     public String updateUrl = "null";
     public String updateDestination = "null";
+    private Properties prop = new Properties();
 
-    public String zipUpdateValidate(String updateId, String version, int type, String product) {
+    public String zipUpdateValidate(String updateId, String version, int type, String product)
+            throws IOException, SQLException {
+
+        LOG.info("Update Validation Service running");
+        prop.load(UpdateValidator.class.getClassLoader().getResourceAsStream("application.properties"));
+
 
         String typeof = null;
         if (type == 2 || type == 3) {
@@ -64,54 +59,40 @@ public class UpdateValidator {
         updateUrl = zipDownloadPath.getUrl();
         updateDestination = zipDownloadPath.getZipDownloadDestination();
         String destFilePath = zipDownloadPath.getDestFilePath();
-        StringBuilder errorMessage = new StringBuilder();
+
+        String errorMessage = "";
         StringBuilder outMessage = new StringBuilder();
         version = prop.getProperty(version);
+        if (version == null) {
+            wumUcResponse.setExitCode(1);
+            wumUcResponse.setResponse("Incorrect directory");
+            return "Incorrect directory";
+        }
 
         PatchValidateFactory patchValidateFactory = PatchValidator.getPatchValidateFactory(filepath);
         assert patchValidateFactory != null;
         CommonValidator commonValidator = patchValidateFactory.getCommonValidation(filepath);
 
-        //use commonValidator methods and download zip
+        //use commonValidator methods
         String result = commonValidator.downloadZipFile(updateUrl, version, updateId, updateDestination);
         if (!Objects.equals(result, "")) {
-            return result;
+            LOG.info(result);
+            wumUcResponse.setExitCode(1);
+            wumUcResponse.setResponse(result + "\n" + errorMessage);
+            return result + "\n" + errorMessage;
         }
 
         //check sign status of the update
         File fl = new File(updateDestination);
-        for (File file : Objects.requireNonNull(fl.listFiles())) {
+        for (File file : fl.listFiles()) {
             if (file.getName().endsWith(".md5") || file.getName().endsWith((".asc"))
                     || file.getName().endsWith((".sha1"))) {
-                errorMessage.append("update \"").append(updateId).append("\" was already signed. ");
-                LOG.error(errorMessage.toString());
-                return errorMessage.toString();
-            }
-        }
-
-        //Validating update jars
-        //@author Pramodya
-        for (File file : Objects.requireNonNull(fl.listFiles())) {
-            if (file.getName().endsWith(".zip")) {
-                String updateName = file.getName().replace(".zip","");
-                String unzipFolder = updateDestination + updateName;
-                try {
-                    Util.unZip(file, unzipFolder);
-                } catch (ServiceException ex) {
-                    LOG.error("Unzipping the update at the destination failed, updateDestination:" + updateDestination,
-                            ex);
-                    errorMessage.append(INTERNAL_PROBLEM).append(ex.getDeveloperMessage()).append(" for the patch \"")
-                            .append(updateId).append("\". ").append(CONTACT_ADMIN);
-                    return errorMessage.toString();
-                }
-                try {
-                    validateUpdateFiles(unzipFolder, updateName);
-                } catch (ServiceException ex){
-                    LOG.error("Validating jars failed for the update \"" + updateName + "\"", ex);
-                    errorMessage.append(INTERNAL_PROBLEM).append(ex.getDeveloperMessage()).append(" for the patch \"")
-                            .append(updateId).append("\". ").append(CONTACT_ADMIN);
-                    return errorMessage.toString();
-                }
+                errorMessage = "update" + updateId + " is already signed\n";
+                FileUtils.deleteDirectory(new File(destFilePath));
+                LOG.info(errorMessage);
+                wumUcResponse.setExitCode(1);
+                wumUcResponse.setResponse(errorMessage);
+                return errorMessage;
             }
         }
 
@@ -119,70 +100,71 @@ public class UpdateValidator {
         String updateValidateScriptPath = prop.getProperty("updateValidateScriptPath");
         String productDownloadPath = prop.getProperty("productDestinationPath");
 
-        //get the url from database
-        String productUrl = "";
-        try {
-            PatchRequestDatabaseHandler productData = new PatchRequestDatabaseHandler();
-            productUrl = productData.getProductURL(product);
-        } catch (SQLException ex) {
-            errorMessage.append(INTERNAL_PROBLEM).append("Cannot access database for" +
-                    " get the vanilla pack URL. ").append(CONTACT_ADMIN);
-            LOG.error(errorMessage.toString());
-        }
 
-        boolean check = new File(productDownloadPath, "wso2" + product + ".zip").exists();
+        //get the url from database
+        PatchRequestDatabaseHandler productData = new PatchRequestDatabaseHandler();
+        String productUrl = productData.getProductURL(product);
+
+        boolean check = new File(productDownloadPath,
+                "wso2" + product + ".zip").exists();
+        LOG.info("Product name : " + "wso2" + product + ".zip");
+
         //download needed vanilla product packs
         if (!productUrl.equals("") && !check) {
             try {
+                LOG.info("Product pack downloading...");
                 Process executor = Runtime.getRuntime().exec("bash " + productDownloadPath +
                         "download-product.sh " + productUrl);
                 executor.waitFor();
-                check = true;
-            } catch (InterruptedException | IOException e) {
-                errorMessage.append(INTERNAL_PROBLEM).append("Cannot access the file in the server. ")
-                        .append(CONTACT_ADMIN);
-                LOG.error(INTERNAL_PROBLEM + "Cannot access the download-product.sh file in the server. ", e);
+            } catch (InterruptedException e) {
+                LOG.error(e.getMessage());
+                wumUcResponse.setExitCode(1);
+                wumUcResponse.setResponse(e.getMessage());
+                return e.getMessage();
             }
+        } else {
+            LOG.error("URL of the vanilla pack not inserted into database or the pack not in the product pack ");
+
         }
 
         if (check) {
             try {
+
                 Process executor = Runtime.getRuntime().exec(updateValidateScriptPath + "wum-uc validate " +
                         filepath + " " + productDownloadPath + "wso2" + product + ".zip");
                 executor.waitFor();
-
+                int exitStatus = executor.exitValue();
                 BufferedReader validateMessage = new BufferedReader(new InputStreamReader(executor.getInputStream()));
                 String validateReturn;
                 while ((validateReturn = validateMessage.readLine()) != null) {
-                    //check whether WUM error contains "zip: not a valid zip file"
-                    if (validateReturn.contains("zip: not a valid zip file")) {
-                        validateReturn = validateReturn.replace(Constants.WUM_UC_ERROR_MESSAGE, "");
-                        validateReturn = validateReturn.replace("zip:", "") + ". ";
-                        validateReturn = product + ".zip" + validateReturn + Constants.CONTACT_ADMIN;
-                    }
+                    LOG.info(validateReturn);
                     outMessage.append(validateReturn);
                 }
-                //return result got from the WUM-UC validator
-                return outMessage.toString();
+                //return result got from the WUM validator
+                //  return outMessage.toString();
+                wumUcResponse.setExitCode(exitStatus);
+                wumUcResponse.setResponse(outMessage.toString());
+                return String.valueOf(outMessage.toString());
             } catch (IOException | InterruptedException e) {
-                errorMessage.append("Internal Problem: Cannot connect with the WUM-UC validator tool");
-                LOG.error(errorMessage.toString(), e);
+                LOG.error(e.getMessage());
             }
-
-
         } else {
-            errorMessage.append("Product vanilla pack URL is incorrect or empty. Contact admin and " +
-                    "update the database. Product: \"").append(product).append("\". ");
-            LOG.error(errorMessage.toString());
-            return errorMessage.toString();
+            errorMessage = errorMessage + ("Product vanilla pack URL is incorrect or empty. Contact responsible " +
+                    "person and update the database. Product: \"") + product + "\"";
+            LOG.error(errorMessage);
+            wumUcResponse.setExitCode(1);
+            wumUcResponse.setResponse(errorMessage);
+            return errorMessage;
         }
-        try {
-            FileUtils.deleteDirectory(new File(destFilePath));
-        } catch (Exception ex) {
-            throw new ServiceException("delete the temporary file",
-                    "Cannot delete temporary file. Internal Problem. Contact Admin. ", ex);
-        }
-        return errorMessage.toString();
+
+        FileUtils.deleteDirectory(new File(destFilePath)); //delete downloaded files
+        wumUcResponse.setExitCode(1);
+        wumUcResponse.setResponse(errorMessage);
+        LOG.info(errorMessage + "\n");
+        return errorMessage;
+
+
+
     }
 }
 

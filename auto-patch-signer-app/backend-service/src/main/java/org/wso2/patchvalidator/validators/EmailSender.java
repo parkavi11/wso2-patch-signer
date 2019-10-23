@@ -17,40 +17,44 @@
  */
 package org.wso2.patchvalidator.validators;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wso2.patchvalidator.service.SyncService;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.wso2.patchvalidator.exceptions.ServiceException;
-import org.wso2.patchvalidator.util.PropertyLoader;
-
-import javax.mail.*;
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 /**
  * <h1>Email Sender</h1>
  * Send email to developer and user with the results of validation.
- *
- * @author Kosala Herath, Senthan Prasanth, Pramodya Mendis
- * @version 1.3
- * @since 2017-12-14
  */
 public class EmailSender {
 
-
-    private static Properties prop = PropertyLoader.getInstance().prop;
+    private static final Logger LOG = LoggerFactory.getLogger(EmailSender.class);
 
     private static void sendEmail(String fromAddress, ArrayList<String> toList, ArrayList<String> ccList,
-                                  String subject, String body){
+                                  String subject, String body) throws IOException {
+
+        Properties prop = new Properties();
+        prop.load(SyncService.class.getClassLoader().getResourceAsStream("application.properties"));
 
         prop.put("mail.smtp.auth", "true");
         prop.put("mail.smtp.starttls.enable", "false");
-        prop.put("mail.smtp.host", prop.getProperty("host"));
-        prop.put("mail.smtp.port", prop.getProperty("emailPort"));
+        prop.put("mail.smtp.host", "tygra.wso2.com");
+        prop.put("mail.smtp.port", "25");
 
         javax.mail.Session session = javax.mail.Session.getDefaultInstance(prop, new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
 
-                return new PasswordAuthentication(prop.getProperty("userEmail"), prop.getProperty("emailPassword"));
+                return new PasswordAuthentication(prop.getProperty("user"), prop.getProperty("emailPassword"));
             }
         });
 
@@ -68,63 +72,75 @@ public class EmailSender {
             }
 
             message.setReplyTo(new InternetAddress[]
-                    {new InternetAddress(prop.getProperty("ccList1"))});  //added now
+                    {new InternetAddress("maheshika@wso2.com")});  //added now
 
             message.setSubject(subject);
             message.setContent(body, "text/html");
 
             Transport transport = session.getTransport(prop.getProperty("protocol"));
-            transport.connect(prop.getProperty("host"), prop.getProperty("userEmail"), prop.getProperty("emailPassword"));
+            transport.connect(prop.getProperty("host"), prop.getProperty("user"), prop.getProperty("emailPassword"));
             Transport.send(message);
+            LOG.info("Email sent successfully");
 
         } catch (MessagingException mex) {
-            throw new ServiceException("Messaging Exception occurred, Email sending failed. ",
-                    "Sending email failed, Please contact admin.", mex);
-
+            LOG.error("Email sending failed", mex);
         }
     }
 
-    public static void executeSendMail(ArrayList<String> toList, ArrayList<String> ccList, String patchId,
-                                              String version, String patchValidateStatus, String updateValidateStatus,
-                                              String pmtUpdateStatus) {
+    public void executeSendMail(ArrayList<String> toList, ArrayList<String> ccList, String patchId, String version,
+                                String patchValidateStatus, String type) throws IOException {
 
+        Properties prop = new Properties();
+        prop.load(SyncService.class.getClassLoader().getResourceAsStream("application.properties"));
+
+        String subTitle = "";
         String subject;
-
+        if (type.equals("patch")) {
+            subTitle = "Patch validate status";
+        } else if (type.equals("update")) {
+            subTitle = "Update validate status";
+        }
         {
-            String pmtUpdateStatusRow = "";
-            if (!pmtUpdateStatus.equals("N/A")) {
-                pmtUpdateStatusRow = "<table style=\"width:100%\"border=\"1px\"><tr style=\"font-size: 12\">" +
-                        "<td align=\"center\" bgcolor=\"#e2efda\">" +
-                        pmtUpdateStatus +
-                        "</td>" +
-                        "</tr></table>";
-            }
-
-            String validationReturner = "<html><body><table style=\"width:100%\"border=\"1px\">" +
-                    "<tr style=\"font-size: 12\">" +
-                    "<th bgcolor='black' width='50%'><font color=\"white\">Update validate status</font></th>" +
-                    "<th bgcolor='black' width='50%'><font color=\"white\">Patch validate status</font></th>" +
-                    "<tr>" +
-                    "<td align=\"center\">" + updateValidateStatus + "</td>" +
-                    "<td align=\"center\">" + patchValidateStatus + "</td>" +
-                    "</tr></table>\n" +
-                    pmtUpdateStatusRow +
+            String validationReturner = "<html><body><table style=\"width:100%\"border=\"1px\"><tr " +
+                    "style=\"font-size: 12\">" +
+                    "<th bgcolor='black'><font color=\"white\">" +
+                    subTitle + "</font></th><tr>" +
+                    "<td align=\"center\">" + patchValidateStatus + "</td></tr></table>\n" +
                     "\n" +
                     "</body>\n" +
                     "</html>";
 
             subject = "[SIGN REQUEST] Sign the patch WSO2-CARBON-PATCH-" + version + "-" + patchId;
 
-            EmailSender.sendEmail(prop.getProperty("userEmail"), toList, ccList, subject, validationReturner);
+            EmailSender.sendEmail(prop.getProperty("mailFrom"), toList, ccList, subject,
+                    validationReturner);
         }
     }
 
-    public static void setCCList(String developedBy, ArrayList<String> toList,
-                           ArrayList<String> ccList) {
+    public void executeSendMailPatchAndUpdate(ArrayList<String> toList, ArrayList<String> ccList, String patchId,
+                                              String version, String patchValidateStatus, String updateValidateStatus)
+            throws IOException {
 
-        toList.add(developedBy);
-        ccList.add(prop.getProperty("ccList1"));
-        ccList.add(prop.getProperty("ccList2"));
+        Properties prop = new Properties();
+        prop.load(SyncService.class.getClassLoader().getResourceAsStream("application.properties"));
+        String subject;
 
+        {
+            String validationReturner = "<html><body><table style=\"width:100%\"border=\"1px\">" +
+                    "<tr style=\"font-size: 12\">" +
+                    "<th bgcolor='black'><font color=\"white\">Update validate status</font></th><th bgcolor='black'>" +
+                    "<font color=\"white\">" +
+                    "Patch validate status</font></th><tr>" +
+                    "<td align=\"center\">" + updateValidateStatus + "</td><td align=\"center\">" +
+                    patchValidateStatus + "</td></tr></table>\n" +
+                    "\n" +
+                    "</body>\n" +
+                    "</html>";
+
+            subject = "[SIGN REQUEST] Sign the patch WSO2-CARBON-PATCH-" + version + "-" + patchId;
+
+            EmailSender.sendEmail(prop.getProperty("mailFrom"), toList, ccList, subject,
+                    validationReturner);
+        }
     }
 }
