@@ -11,10 +11,6 @@ import java.util.Properties;
  * <h1>Username and Password Validation</h1>
  * Before reply to the request from the outside requester, validate the
  * given username and password. This is a basic Auth.
- *
- * @author Kosala Herath
- * @version 1.3
- * @since 2017-12-14
  */
 public class UsernamePasswordSecurityInterceptor extends AbstractBasicAuthSecurityInterceptor {
 

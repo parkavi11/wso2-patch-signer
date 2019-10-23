@@ -20,10 +20,6 @@ package org.wso2.patchvalidator.constants;
 /**
  * <h1>Constants</h1>
  * Constants for microservice.
- *
- * @author Kosala Herath
- * @version 1.3
- * @since 2017-12-14
  */
 public final class Constants {
 

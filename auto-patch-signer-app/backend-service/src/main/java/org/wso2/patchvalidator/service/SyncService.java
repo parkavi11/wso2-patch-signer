@@ -50,10 +50,6 @@ import javax.ws.rs.core.Response;
 /**
  * <h1>SyncServices</h1>
  * All the endpoints in the microservice is defined here.
- *
- * @author Kosala Herath,Senthan Praanth
- * @version 1.2
- * @since 2017-12-14
  */
 @Path("/request")
 public class SyncService {

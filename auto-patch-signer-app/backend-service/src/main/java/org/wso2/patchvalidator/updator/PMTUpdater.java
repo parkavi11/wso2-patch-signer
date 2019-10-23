@@ -33,10 +33,6 @@ import java.util.Properties;
 /**
  * <h1>PMT Updater</h1>
  * After successful validation update the PMT with release state.
- *
- * @author Kosala Herath
- * @version 1.3
- * @since 2017-12-14
  */
 public class PMTUpdater {
 

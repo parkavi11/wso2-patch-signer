@@ -4,10 +4,6 @@ package org.wso2.patchvalidator.validators;
 /**
  * <h1>Update Validator</h1>
  *handle the response comes from WUM-UC
- *
- * @author Thushanthan Amalanathan
- * @version 1.2
- * @since 2019-01-21
  */
 public class WumUcResponse {
     String response;

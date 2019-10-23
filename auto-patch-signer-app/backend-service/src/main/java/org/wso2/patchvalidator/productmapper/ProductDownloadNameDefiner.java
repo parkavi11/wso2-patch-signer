@@ -4,10 +4,6 @@ package org.wso2.patchvalidator.productmapper;
  * <h1>Product Download Name Definer</h1>
  * Define the path for wso2 product package in <a href="http://atuwa.private.wso2.com/WSO2-Products/">atuwa</a>
  * for download wso2 products.
- *
- * @author Kosala Herath
- * @version 1.3
- * @since 2017-12-14
  */
 public class ProductDownloadNameDefiner {
 

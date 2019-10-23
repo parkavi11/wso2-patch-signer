@@ -10,10 +10,6 @@ import java.sql.SQLException;
 /**
  * <h1>Product Separator</h1>
  * Separate each product and get product abbreviation and return array of product names.
- *
- * @author Kosala Herath
- * @version 1.3
- * @since 2017-12-14
  */
 public class ProductSeparator {
 

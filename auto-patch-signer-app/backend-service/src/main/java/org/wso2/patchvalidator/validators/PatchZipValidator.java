@@ -75,10 +75,6 @@ import static org.tmatesoft.svn.core.SVNURL.parseURIEncoded;
  * <h1>Patch Zip Validator</h1>
  * Validate each file in zip file of the patch and return error messages
  * or successful message.
- *
- * @author Kosala Herath,Senthan Prasanth
- * @version 1.3
- * @since 2017-12-14
  */
 
 @SuppressWarnings({"deprecation", "ResultOfMethodCallIgnored", "MismatchedQueryAndUpdateOfStringBuilder"})

@@ -34,10 +34,6 @@ import java.util.Properties;
 /**
  * <h1>Patch Validator</h1>
  * Validate patches considering all the file structure and content.
- *
- * @author Kosala Herath,Senthan Prasanth
- * @version 1.2
- * @since 2017-12-14
  */
 public class PatchValidator {
 

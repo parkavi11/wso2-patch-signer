@@ -32,10 +32,6 @@ import org.wso2.patchvalidator.authentication.UsernamePasswordSecurityIntercepto
  * Application on wso2 internal app store.
  * Finally generate commit and lock keys for each patch and
  * update and send email to developer.
- *
- * @author Kosala Herath,Senthan Praanth
- * @version 1.2
- * @since 2017-12-14
  */
 public class Application {
 

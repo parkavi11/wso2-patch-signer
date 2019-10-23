@@ -14,10 +14,6 @@ import java.util.Properties;
 /**
  * <h1>Staging Database Update</h1>
  * In reverting process delete or update Staging Database entries.
- *
- * @author Kosala Herath
- * @version 1.3
- * @since 2017-12-14
  */
 public class StagingDatabaseHandler {
 

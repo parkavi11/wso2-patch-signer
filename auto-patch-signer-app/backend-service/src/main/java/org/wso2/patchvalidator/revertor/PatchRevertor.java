@@ -25,10 +25,6 @@ import java.util.Properties;
  * <h1>Patch Revertor</h1>
  * Signed patches or Updates deletes from SVN repository and
  * delete data entries in UAT and Staging Databases.
- *
- * @author Kosala Herath
- * @version 1.3
- * @since 2017-12-14
  */
 public class PatchRevertor {
 

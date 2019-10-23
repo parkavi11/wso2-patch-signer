@@ -26,10 +26,6 @@ import java.util.Properties;
 /**
  * <h1>Zip Download Path</h1>
  * Define zip file download path and file paths
- *
- * @author Kosala Herath,Senthan Prasanth
- * @version 1.2
- * @since 2017-12-14
  */
 class ZipDownloadPath {
 

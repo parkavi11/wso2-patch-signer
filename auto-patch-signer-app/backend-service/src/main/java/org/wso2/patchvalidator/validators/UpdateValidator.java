@@ -31,10 +31,6 @@ import java.util.Properties;
 /**
  * <h1>Update Validator</h1>
  * Validate updates considering all the file structure and content.
- *
- * @author Kosala Herath, Senthan Prasanth, Thushanthan Amalanathan
- * @version 1.2
- * @since 2017-12-14
  */
 
 public class UpdateValidator {

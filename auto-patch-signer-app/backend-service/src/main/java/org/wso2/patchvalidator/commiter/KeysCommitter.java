@@ -30,10 +30,6 @@ import java.io.IOException;
  * After validation the patch ot update generate and commit keys for
  * update and patch to SVN repository. Also send request to the PMT
  * with release state.
- *
- * @author Kosala Herath, Senthan Prasanth
- * @version 1.3
- * @since 2017-12-14
  */
 public class KeysCommitter {
 
