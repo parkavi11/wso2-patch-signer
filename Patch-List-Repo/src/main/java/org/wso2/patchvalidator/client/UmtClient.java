@@ -27,12 +27,12 @@ public class UmtClient {
     private static Properties prop = PropertyLoader.getInstance().prop;
 
     //read patch list using UMT API from UMT DB
-    public static ArrayList<String> getPatchList() {
+    public static ArrayList<String> getPatchList(String state) {
         JSONParser parser = new JSONParser();
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 
             HttpPost request = new HttpPost(prop.getProperty("umtUri"));
-            String jsonInputString = "{'state':'ReadyToSign'}";
+            String jsonInputString = "{'state':'"+state+"'}";
             StringEntity params = new StringEntity(jsonInputString);
 
             request.getMethod();

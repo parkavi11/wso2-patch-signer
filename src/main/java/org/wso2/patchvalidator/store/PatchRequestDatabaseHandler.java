@@ -431,23 +431,10 @@ public class PatchRequestDatabaseHandler implements CommonDatabaseHandler {
     }
 
     private String getCarbonVersion(String carbonVersion) {
-
+        //carbonVersion:wilkes/hamming/turing/minsky
+        //return as 4.4.0/5.0.0/4.2.0/4.5.0
         LOG.info(carbonVersion);
-        switch (carbonVersion) {
-            case "wilkes":
-                carbonVersion = "4.4.0";
-                break;
-            case "hamming":
-                carbonVersion = "5.2.0";
-                break;
-            case "turing":
-                carbonVersion = "4.2.0";
-                break;
-            default:
-                LOG.info("Error in carbon version: " + carbonVersion);
-                break;
-        }
-        return carbonVersion;
+        return prop.getProperty(carbonVersion);
     }
 
     private String getPatchType(int type) {
