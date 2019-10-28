@@ -59,8 +59,7 @@ public class Signer {
                 //get version and patch id from patch name string
                 try {
                     //WSO2-CARBON-PATCH-4.4.0-2912
-                    String[] patchReplacedNameArr = patch.replace("WSO2-CARBON-PATCH-", "")
-                            .split("-");
+                    String[] patchReplacedNameArr = patch.replace("WSO2-CARBON-PATCH-", "").split("-");
                     carbonVersion = patchReplacedNameArr[0].trim();//carbon version - 4.2.0/4.4.0/5.0.0
                     patchId = patchReplacedNameArr[1].trim(); //2912
                 } catch (Exception ex) {
@@ -81,7 +80,7 @@ public class Signer {
                     patchInfo = new PatchInfo(pmtResultArr);
                 } catch (Exception ex) {
                     LOG.info("Creating object from pmt patch json failed, patch name: \"" + patch + "\". " +
-                            " Exception: "+ ex);
+                            " Exception: " + ex);
                     continue;
                 }
 
