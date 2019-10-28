@@ -64,7 +64,7 @@ public class PatchInfo {
             } else if (element.get("name").equals("wum_status")) {
                 try {
                     this.setWumStatus(Util.createListFromJsonArray((JSONArray) element.get("value")).get(0));
-                } catch (Exception ex){
+                } catch (Exception ex) {
                     throw new ServiceException("wum_status is not valid in the pmt patch json, wum_status:" +
                             Util.createListFromJsonArray((JSONArray) element.get("value")),
                             "Wum status is not valid, Please amend and re-submit.");
@@ -72,8 +72,6 @@ public class PatchInfo {
             }
         }
     }
-
-
 
 
     private void setPatchLifeCycleState(String patchLifeCycleState) {
@@ -85,7 +83,7 @@ public class PatchInfo {
         }
     }
 
-    public String getPatchLifeCycleState(){
+    public String getPatchLifeCycleState() {
         return patchLifeCycleState;
     }
 
@@ -101,5 +99,8 @@ public class PatchInfo {
     private void setWumStatus(String wumStatus) {
         this.wumStatus = wumStatus;
     }
-    private void setWumReleasedTimestamp(String wumReleasedTimestamp) {this.wumReleasedTimestamp = wumReleasedTimestamp;}
+
+    private void setWumReleasedTimestamp(String wumReleasedTimestamp) {
+        this.wumReleasedTimestamp = wumReleasedTimestamp;
+    }
 }

@@ -32,7 +32,7 @@ public class UmtClient {
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 
             HttpPost request = new HttpPost(prop.getProperty("umtUri"));
-            String jsonInputString = "{'state':'"+ state +"'}";
+            String jsonInputString = "{'state':'" + state + "'}";
             StringEntity params = new StringEntity(jsonInputString);
 
             request.getMethod();
@@ -49,15 +49,15 @@ public class UmtClient {
                 JSONArray jsonArr = (JSONArray) parser.parse(result);
                 //LOG.info("Result   " +result);
                 ArrayList<String> list = new ArrayList<String>();
-                for (int i=0;i<jsonArr.size();i++) {
+                for (int i = 0; i < jsonArr.size(); i++) {
                     JSONObject rootObj = (JSONObject) jsonArr.get(i);
-                    String patchName=(String) rootObj.get("patchName");
+                    String patchName = (String) rootObj.get("patchName");
                     list.add(patchName);
                 }
                 return list;
             } else {
                 throw new ServiceException("Error occurred when retrieving UMT patch List. +" +
-                        " url:  httpUri statusCode: " + statusCode+", Please contact admin.");
+                        " url:  httpUri statusCode: " + statusCode + ", Please contact admin.");
             }
         } catch (Exception ex) {
             throw new ServiceException("Error occurred when retrieving UMT patch List, Please contact admin.", ex);

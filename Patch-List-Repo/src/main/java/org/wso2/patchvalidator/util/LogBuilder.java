@@ -17,7 +17,7 @@ public class LogBuilder {
 
         try {
             LOG = LoggerFactory.getLogger(Signer.class);
-        } catch (Exception ex){
+        } catch (Exception ex) {
             throw new ServiceException("Exception occurred when creating Logger instance. ", ex);
         }
     }

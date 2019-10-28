@@ -2,6 +2,7 @@ package org.wso2.patchvalidator.client;
 
 import java.io.InputStream;
 import java.util.Properties;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
