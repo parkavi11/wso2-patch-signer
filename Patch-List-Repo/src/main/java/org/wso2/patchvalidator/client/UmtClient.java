@@ -32,7 +32,7 @@ public class UmtClient {
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 
             HttpPost request = new HttpPost(prop.getProperty("umtUri"));
-            String jsonInputString = "{'state':'"+ state +"'}";
+            String jsonInputString = "{'state':'" + state + "'}";
             StringEntity params = new StringEntity(jsonInputString);
 
             request.getMethod();
