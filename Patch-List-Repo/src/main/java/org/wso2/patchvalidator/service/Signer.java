@@ -7,15 +7,18 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 
+import org.slf4j.Logger;
 import org.wso2.patchvalidator.client.PmtClient;
 import org.wso2.patchvalidator.client.UmtClient;
 import org.wso2.patchvalidator.entryvalidator.PatchInfo;
 import org.wso2.patchvalidator.exceptions.ServiceException;
+import org.wso2.patchvalidator.util.LogBuilder;
 
 /**
  * Patch list ordering handled by this class.
  */
-class Signer {
+public class Signer {
+    private static final Logger LOG = LogBuilder.getInstance().LOG;
 
     static StringBuilder sign() {
         ArrayList<String> patchesList = new ArrayList<>();
@@ -34,20 +37,19 @@ class Signer {
         // call API  and get all the patches in the ReadyToSign state
         try {
             patchesList = UmtClient.getPatchList("ReadyToSign");
-            System.out.println("------------------------------------------------------------------");
-            System.out.println("                    Patch list from UMT Database                  ");
-            System.out.println("------------------------------------------------------------------");
+            LOG.info("------------------------------------------------------------------");
+            LOG.info("                    Patch list from UMT Database                  ");
+            LOG.info("------------------------------------------------------------------");
             for (String patch : patchesList){
-                System.out.println(patch);
+                LOG.info(patch);
             }
-            System.out.println();
         } catch (Exception ex) {
-            System.out.println("Exception occurred when searching patches in the governance registry" +
+            LOG.info("Exception occurred when searching patches in the governance registry" +
                     " Exception: "+ ex);
         }
 
         if (patchesList.size() < 1) {
-            System.out.println("No patches in the \"Ready to sign\" state");
+            LOG.info("No patches in the \"Ready to sign\" state");
         } else {
             /**
              * iterate the patches list and check the state in registry
@@ -62,7 +64,7 @@ class Signer {
                     carbonVersion = patchReplacedNameArr[0].trim();//carbon version - 4.2.0/4.4.0/5.0.0
                     patchId = patchReplacedNameArr[1].trim(); //2912
                 } catch (Exception ex) {
-                    System.out.println("Patch name retrieved from greg not in the correct format, patch:" + patch + " Exception: "+ ex);
+                    LOG.info("Patch name retrieved from greg not in the correct format, patch:" + patch + " Exception: "+ ex);
                     continue;
                 }
 
@@ -71,14 +73,14 @@ class Signer {
                     patchJson = PmtClient.getPatchInfo(carbonVersion, patchId);
                     pmtResultArr = (JSONArray) patchJson.get("pmtResult");
                 } catch (ServiceException ex) {
-                    System.out.println("Retrieving patch json failed, patch:" + patch+ " Exception: "+ ex);
+                    LOG.info("Retrieving patch json failed, patch:" + patch+ " Exception: "+ ex);
                     continue;
                 }
 
                 try {
                     patchInfo = new PatchInfo(pmtResultArr);
                 } catch (Exception ex) {
-                    System.out.println("Creating object from pmt patch json failed, patch name: \"" + patch + "\". " +
+                    LOG.info("Creating object from pmt patch json failed, patch name: \"" + patch + "\". " +
                             " Exception: "+ ex);
                     continue;
                 }
@@ -86,8 +88,8 @@ class Signer {
                 if (patchInfo.getPatchLifeCycleState().equals("ReadyToSign")) {
                     hMap.put(patch, patchInfo.getWumReleasedTimestamp());
                 } else {
-                    System.out.println("======================Unable proceed to sign======================");
-                    System.out.println("Patch: "+ patch+ " State : "+patchInfo.getPatchLifeCycleState());
+                    LOG.info("======================Unable proceed to sign======================");
+                    LOG.info("Patch: "+ patch+ " State : "+patchInfo.getPatchLifeCycleState());
                 }
             }
 
@@ -111,9 +113,9 @@ class Signer {
                 }
             }
 
-            System.out.println("------------------------------------------------------------------");
-            System.out.println("         Patch Signing order in ACS order by timestamp            ");
-            System.out.println("------------------------------------------------------------------");
+            LOG.info("------------------------------------------------------------------");
+            LOG.info("         Patch Signing order in ACS order by timestamp            ");
+            LOG.info("------------------------------------------------------------------");
             for (String patch : orderedList){
                 String[] patchReplacedNameArr = patch.replace("WSO2-CARBON-PATCH-", "")
                         .split("-");
@@ -122,16 +124,16 @@ class Signer {
                 patchJson = PmtClient.getPatchInfo(carbonVersion, patchId);
                 pmtResultArr = (JSONArray) patchJson.get("pmtResult");
                 patchInfo = new PatchInfo(pmtResultArr);
-                System.out.println("Patch: "+ patch+ " timestamp: "+ patchInfo.getWumReleasedTimestamp()+
+                LOG.info("Patch: "+ patch+ " timestamp: "+ patchInfo.getWumReleasedTimestamp()+
                         " WUM Status : "+patchInfo.getWumStatus());
             }
 
-            System.out.println("------------------------------------------------------------------");
-            System.out.println("                   Patches in UAT staging state                   ");
-            System.out.println("------------------------------------------------------------------");
+            LOG.info("------------------------------------------------------------------");
+            LOG.info("                   Patches in UAT staging state                   ");
+            LOG.info("------------------------------------------------------------------");
             patchesList = UmtClient.getPatchList("UATStaging");
             for (String patch : patchesList){
-                System.out.println(patch);
+                LOG.info(patch);
             }
         }
         return returnMessage;
