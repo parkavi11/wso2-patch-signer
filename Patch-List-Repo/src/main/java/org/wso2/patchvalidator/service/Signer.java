@@ -63,7 +63,8 @@ public class Signer {
                     carbonVersion = patchReplacedNameArr[0].trim();//carbon version - 4.2.0/4.4.0/5.0.0
                     patchId = patchReplacedNameArr[1].trim(); //2912
                 } catch (Exception ex) {
-                    LOG.info("Patch name retrieved from greg not in the correct format, patch:" + patch + " Exception: "+ ex);
+                    LOG.info("Patch name retrieved from greg not in the correct format, patch:" + patch + " Exception: "
+                             + ex);
                     continue;
                 }
 
