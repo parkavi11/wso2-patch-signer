@@ -10,7 +10,7 @@ import org.wso2.patchvalidator.service.Signer;
  */
 public class LogBuilder {
 
-    private static LogBuilder single_instance = null;
+    private static LogBuilder singleInstance = null;
     public Logger LOG;
 
     private LogBuilder() {
@@ -24,9 +24,9 @@ public class LogBuilder {
 
     public static LogBuilder getInstance() {
 
-        if (single_instance == null)
-            single_instance = new LogBuilder();
+        if (singleInstance == null)
+            singleInstance = new LogBuilder();
 
-        return single_instance;
+        return singleInstance;
     }
 }
