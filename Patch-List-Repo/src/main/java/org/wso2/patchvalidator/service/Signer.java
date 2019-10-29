@@ -123,8 +123,8 @@ public class Signer {
                 patchJson = PmtClient.getPatchInfo(carbonVersion, patchId);
                 pmtResultArr = (JSONArray) patchJson.get("pmtResult");
                 patchInfo = new PatchInfo(pmtResultArr);
-                LOG.info(String.format("Patch: %s timestamp: %s WUM Status :%s "
-                        , patch, patchInfo.getWumReleasedTimestamp(), patchInfo.getWumStatus()));
+                LOG.info(String.format("Patch: %s timestamp: %s WUM Status :%s ",
+                        patch, patchInfo.getWumReleasedTimestamp(), patchInfo.getWumStatus()));
             }
 
             LOG.info(dash);
