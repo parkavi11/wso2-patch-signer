@@ -18,6 +18,7 @@ import org.wso2.patchvalidator.util.LogBuilder;
  * Patch list ordering handled by this class.
  */
 public class Signer {
+    private Signer() { }
     private static final Logger LOG = LogBuilder.getInstance().LOG;
 
     static StringBuilder sign() {
