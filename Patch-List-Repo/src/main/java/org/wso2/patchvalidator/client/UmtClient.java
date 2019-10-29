@@ -48,7 +48,7 @@ public class UmtClient {
                 InputStream inStream = response.getEntity().getContent();
                 String result = convertStreamToString(inStream);
                 JSONArray jsonArr = (JSONArray) parser.parse(result);
-                List<String> list = new ArrayList<String>();
+                List<String> list = new ArrayList<>();
                 for (int i = 0; i < jsonArr.size(); i++) {
                     JSONObject rootObj = (JSONObject) jsonArr.get(i);
                     String patchName = (String) rootObj.get("patchName");
