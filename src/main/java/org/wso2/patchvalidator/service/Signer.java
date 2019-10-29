@@ -426,7 +426,7 @@ class Signer {
      * @return PMT update status message
      */
     private static String updatePmtLcState(String patchId, String version, String state) {
-        String cVersion =prop.getProperty(version);
+        String cVersion = prop.getProperty(version);
         String pmtUpdateStatus;
         try {
             pmtUpdateStatus = PmtClient.updatePmtLcState(patchId, cVersion, state);
