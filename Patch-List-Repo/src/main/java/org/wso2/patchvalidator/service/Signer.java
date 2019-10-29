@@ -21,10 +21,10 @@ public class Signer {
     private static final Logger LOG = LogBuilder.getInstance().LOG;
 
     static StringBuilder sign() {
-        ArrayList<String> patchesList = new ArrayList<>();
+        List<String> patchesList = new ArrayList<>();
         StringBuilder returnMessage = new StringBuilder();
         HashMap<String, String> hMap = new HashMap<>();
-        ArrayList<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
         ArrayList<String> orderedList = new ArrayList<>();
         LinkedHashMap<String, String> sortedMap = new LinkedHashMap<>();
 
@@ -48,7 +48,7 @@ public class Signer {
             LOG.error("Exception occurred when searching patches in the governance registry, %s", ex);
         }
 
-        if (patchesList.size() < 1) {
+        if (patchesList.isEmpty()) {
             LOG.info("No patches in the \"Ready to sign\" state");
         } else {
             /**

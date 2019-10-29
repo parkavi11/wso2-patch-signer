@@ -3,6 +3,7 @@ package org.wso2.patchvalidator.client;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -27,7 +28,7 @@ public class UmtClient {
     private static Properties prop = PropertyLoader.getInstance().prop;
 
     //read patch list using UMT API from UMT DB
-    public static ArrayList<String> getPatchList(String state) {
+    public static List<String> getPatchList(String state) {
         JSONParser parser = new JSONParser();
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 
@@ -47,8 +48,7 @@ public class UmtClient {
                 InputStream inStream = response.getEntity().getContent();
                 String result = convertStreamToString(inStream);
                 JSONArray jsonArr = (JSONArray) parser.parse(result);
-                //LOG.info("Result   " +result);
-                ArrayList<String> list = new ArrayList<String>();
+                List<String> list = new ArrayList<String>();
                 for (int i = 0; i < jsonArr.size(); i++) {
                     JSONObject rootObj = (JSONObject) jsonArr.get(i);
                     String patchName = (String) rootObj.get("patchName");
