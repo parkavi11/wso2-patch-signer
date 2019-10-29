@@ -98,11 +98,7 @@ public class Signer {
             for (Map.Entry<String, String> entry : hMap.entrySet()) {
                 list.add(entry.getValue());
             }
-            Collections.sort(list, new Comparator<String>() {
-                public int compare(String str, String str1) {
-                    return (str).compareTo(str1);
-                }
-            });
+            list.sort(Comparator.naturalOrder());
             for (String str : list) {
                 for (Entry<String, String> entry : hMap.entrySet()) {
                     if (entry.getValue().equals(str)) {
