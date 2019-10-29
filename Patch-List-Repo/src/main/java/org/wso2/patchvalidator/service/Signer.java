@@ -49,7 +49,7 @@ public class Signer {
         }
 
         if (patchesList.isEmpty()) {
-            LOG.info("No patches in the \"Ready to sign\" state");
+            LOG.info("No patches in the "Ready to sign" state");
         } else {
             /**
              * iterate the patches list and check the state in registry
