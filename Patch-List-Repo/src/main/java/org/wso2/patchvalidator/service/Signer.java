@@ -33,19 +33,19 @@ public class Signer {
         JSONArray pmtResultArr;
         JSONObject patchJson;
         PatchInfo patchInfo;
+        String dash = "------------------------------------------------------------------";
 
         // call API  and get all the patches in the ReadyToSign state
         try {
             patchesList = UmtClient.getPatchList("ReadyToSign");
-            LOG.info("------------------------------------------------------------------");
+            LOG.info(dash);
             LOG.info("                    Patch list from UMT Database                  ");
-            LOG.info("------------------------------------------------------------------");
-            for (String patch : patchesList){
+            LOG.info(dash);
+            for (String patch : patchesList) {
                 LOG.info(patch);
             }
         } catch (Exception ex) {
-            LOG.info("Exception occurred when searching patches in the governance registry" +
-                    " Exception: "+ ex);
+            LOG.error("Exception occurred when searching patches in the governance registry, %s", ex);
         }
 
         if (patchesList.size() < 1) {
@@ -64,9 +64,7 @@ public class Signer {
                     carbonVersion = patchReplacedNameArr[0].trim();//carbon version - 4.2.0/4.4.0/5.0.0
                     patchId = patchReplacedNameArr[1].trim(); //2912
                 } catch (Exception ex) {
-                    LOG.info("Patch name retrieved from greg not in the correct format, patch:" + patch + " Exception: "
-                             + ex);
-                    LOG.info("Patch name retrieved from greg not in the correct format, patch:" + patch + " Exception: " + ex);
+                    LOG.error("Patch name retrieved from greg not in the correct format, %s", ex);
                     continue;
                 }
 
@@ -75,15 +73,14 @@ public class Signer {
                     patchJson = PmtClient.getPatchInfo(carbonVersion, patchId);
                     pmtResultArr = (JSONArray) patchJson.get("pmtResult");
                 } catch (ServiceException ex) {
-                    LOG.info("Retrieving patch json failed, patch:" + patch+ " Exception: "+ ex);
+                    LOG.error("Retrieving patch json failed,%s", ex);
                     continue;
                 }
 
                 try {
                     patchInfo = new PatchInfo(pmtResultArr);
                 } catch (Exception ex) {
-                    LOG.info("Creating object from pmt patch json failed, patch name: \"" + patch + "\". " +
-                            " Exception: "+ ex);
+                    LOG.error("Creating object from pmt patch json failed, patch name: \"" + patch + "\". %s", ex);
                     continue;
                 }
 
@@ -91,7 +88,7 @@ public class Signer {
                     hMap.put(patch, patchInfo.getWumReleasedTimestamp());
                 } else {
                     LOG.info("======================Unable proceed to sign======================");
-                    LOG.info("Patch: "+ patch+ " State : "+patchInfo.getPatchLifeCycleState());
+                    LOG.info(String.format("Patch: %s State : %s", patch, patchInfo.getPatchLifeCycleState()));
                 }
             }
 
@@ -115,10 +112,10 @@ public class Signer {
                 }
             }
 
-            LOG.info("------------------------------------------------------------------");
+            LOG.info(dash);
             LOG.info("         Patch Signing order in ACS order by timestamp            ");
-            LOG.info("------------------------------------------------------------------");
-            for (String patch : orderedList){
+            LOG.info(dash);
+            for (String patch : orderedList) {
                 String[] patchReplacedNameArr = patch.replace("WSO2-CARBON-PATCH-", "")
                         .split("-");
                 carbonVersion = patchReplacedNameArr[0].trim();//carbon version - 4.2.0/4.4.0/5.0.0
@@ -126,15 +123,15 @@ public class Signer {
                 patchJson = PmtClient.getPatchInfo(carbonVersion, patchId);
                 pmtResultArr = (JSONArray) patchJson.get("pmtResult");
                 patchInfo = new PatchInfo(pmtResultArr);
-                LOG.info("Patch: "+ patch+ " timestamp: "+ patchInfo.getWumReleasedTimestamp()+
-                        " WUM Status : "+patchInfo.getWumStatus());
+                LOG.info(String.format("Patch: %s timestamp: %s WUM Status :%s "
+                        , patch, patchInfo.getWumReleasedTimestamp(), patchInfo.getWumStatus()));
             }
 
-            LOG.info("------------------------------------------------------------------");
+            LOG.info(dash);
             LOG.info("                   Patches in UAT staging state                   ");
-            LOG.info("------------------------------------------------------------------");
+            LOG.info(dash);
             patchesList = UmtClient.getPatchList("UATStaging");
-            for (String patch : patchesList){
+            for (String patch : patchesList) {
                 LOG.info(patch);
             }
         }
