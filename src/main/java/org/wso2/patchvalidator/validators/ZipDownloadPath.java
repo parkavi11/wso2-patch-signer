@@ -85,18 +85,7 @@ class ZipDownloadPath {
     }
 
     private String getCarbonVersionWord(String version) {
-        switch (version) {
-            case "4.4.0":
-                version = "wilkes";
-                break;
-            case "5.0.0":
-                version = "hamming";
-                break;
-            case "4.2.0":
-                version = "turing";
-                break;
-        }
-        return version;
+        return prop.getProperty(version);
     }
 }
 

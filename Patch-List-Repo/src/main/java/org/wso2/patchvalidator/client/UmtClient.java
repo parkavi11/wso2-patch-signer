@@ -3,6 +3,7 @@ package org.wso2.patchvalidator.client;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -27,12 +28,12 @@ public class UmtClient {
     private static Properties prop = PropertyLoader.getInstance().prop;
 
     //read patch list using UMT API from UMT DB
-    public static ArrayList<String> getPatchList() {
+    public static List<String> getPatchList(String state) {
         JSONParser parser = new JSONParser();
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 
             HttpPost request = new HttpPost(prop.getProperty("umtUri"));
-            String jsonInputString = "{'state':'ReadyToSign'}";
+            String jsonInputString = "{'state':'" + state + "'}";
             StringEntity params = new StringEntity(jsonInputString);
 
             request.getMethod();
@@ -47,17 +48,16 @@ public class UmtClient {
                 InputStream inStream = response.getEntity().getContent();
                 String result = convertStreamToString(inStream);
                 JSONArray jsonArr = (JSONArray) parser.parse(result);
-                //LOG.info("Result   " +result);
-                ArrayList<String> list = new ArrayList<String>();
-                for (int i=0;i<jsonArr.size();i++) {
+                List<String> list = new ArrayList<>();
+                for (int i = 0; i < jsonArr.size(); i++) {
                     JSONObject rootObj = (JSONObject) jsonArr.get(i);
-                    String patchName=(String) rootObj.get("patchName");
+                    String patchName = (String) rootObj.get("patchName");
                     list.add(patchName);
                 }
                 return list;
             } else {
                 throw new ServiceException("Error occurred when retrieving UMT patch List. +" +
-                        " url:  httpUri statusCode: " + statusCode+", Please contact admin.");
+                        " url:  httpUri statusCode: " + statusCode + ", Please contact admin.");
             }
         } catch (Exception ex) {
             throw new ServiceException("Error occurred when retrieving UMT patch List, Please contact admin.", ex);

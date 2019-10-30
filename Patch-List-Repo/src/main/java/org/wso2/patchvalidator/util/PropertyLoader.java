@@ -19,7 +19,7 @@ public class PropertyLoader {
         try {
             prop = new Properties();
             prop.load(Signer.class.getClassLoader().getResourceAsStream("application.properties"));
-        } catch (Exception ex){
+        } catch (Exception ex) {
             throw new ServiceException("Exception occurred when loading the property file. ", ex);
         }
     }

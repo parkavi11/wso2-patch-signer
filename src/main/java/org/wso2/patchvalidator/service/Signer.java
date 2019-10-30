@@ -426,16 +426,7 @@ class Signer {
      * @return PMT update status message
      */
     private static String updatePmtLcState(String patchId, String version, String state) {
-
-        //changed for staging => remove this when you are deploying in live
-        String cVersion = version;
-        if (cVersion.equals("wilkes")) {
-            cVersion = "4.4.0";
-        } else if (cVersion.equals("hamming")) {
-            cVersion = "5.0.0";
-        } else if (cVersion.equals("turing")) {
-            cVersion = "4.2.0";
-        }
+        String cVersion = prop.getProperty(version);
         String pmtUpdateStatus;
         try {
             pmtUpdateStatus = PmtClient.updatePmtLcState(patchId, cVersion, state);
