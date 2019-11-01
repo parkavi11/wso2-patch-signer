@@ -1,9 +1,9 @@
-import groovy.json.JsonSlurper
 import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 import jenkins.model.*
 
 // Retrieve the access tokens for WUM.
-private def wumAccessToken(appKey, username, password) {
+private def wumAccessToken(appKey, username, password, scope) {
 
     def accessTokenEndpoint = new URL('https://gateway.api.cloud.wso2.com/token')
     HttpURLConnection connectionLive = (HttpURLConnection) accessTokenEndpoint.openConnection()
@@ -84,7 +84,7 @@ private def channels(product, version, accessToken) {
 
     // Append the product and version to the end of the URL.
     def updatesEndpoint = new URL('https://gateway.api.cloud.wso2.com/t/wso2umuat/channels/3.0.0/user/' + product
-        + "/" + version)
+            + "/" + version)
     HttpURLConnection connectionLive = (HttpURLConnection) updatesEndpoint.openConnection()
     connectionLive.addRequestProperty("Accept", "application/json")
     connectionLive.addRequestProperty("Authorization", "Bearer " + accessToken)
@@ -141,7 +141,7 @@ private def productsToBeUpdated(productsInputParameter, wumUatAccessToken, lates
             tokenizedInput = tokenizedInput - lastToken
             def tokenizedProductName = tokenizedInput.join("-")
             jsonString += '{ "product-name": "' + tokenizedProductName.getAt(0..-7) + '", "product-version": "'
-                +tokenizedProductName.getAt(-5..-1) + '", "channel": "' + lastToken + '" }' + comma
+            +tokenizedProductName.getAt(-5..-1) + '", "channel": "' + lastToken + '" }' + comma
         }
         def completeJson = "[" + jsonString + "]"
         newUpdateList = jsonSlurper.parseText(completeJson)
@@ -202,6 +202,15 @@ boolean parent_job() {
     def uatAppKey = env.WUM_UAT_APPKEY
     def liveAppKey = env.WUM_LIVE_APPKEY
 
+    List<String> scopeList = new ArrayList<String>()
+    scopeList.add("updates_get_list")
+    scopeList.add("updates_get_products")
+    scopeList.add("updates_get_latest_timestamp")
+    scopeList.add("channels_get_channel_for_product")
+
+    // Scope for wum-live
+    def scopeLive = "updates_get_latest_ timestamp"
+
     def jsonSlurper = new JsonSlurper()
 
     // Retrieve the child job names from "wum3" folder.
@@ -215,17 +224,21 @@ boolean parent_job() {
     println "\n" + "Child Jobs Available: " + childJobNameList + "\n"
 
     // Retrieve the access token for WUM UAT.
-    try {
-        wumUatAccessToken = wumAccessToken(uatAppKey, jenkinsUsername, jenkinsPassword)
-    } catch (Exception e) {
-        println "Error while fetching the WUM UAT access token: " + e + "\n"
+    for (String item : scopeList) {
+        try {
+            wumUatAccessToken = wumAccessToken(uatAppKey, jenkinsUsername, jenkinsPassword, item)
+            println "WUM UAT access token: " + wumUatAccessToken + "\n"
+        } catch (Exception e) {
+            throw new Exception("Error while fetching the WUM UAT access token: " + e)
+        }
     }
 
     // Retrieve the access token for WUM Live.
     try {
-        wumLiveAccessToken = wumAccessToken(liveAppKey, jenkinsUsername, jenkinsPassword)
+        wumLiveAccessToken = wumAccessToken(liveAppKey, jenkinsUsername, jenkinsPassword, scopeLive)
+        println "WUM Live access token: " + wumLiveAccessToken + "\n"
     } catch (Exception e) {
-        println "Error while fetching the WUM Live access token: " + e + "\n"
+        throw new Exception("Error while fetching the WUM Live access token: " + e)
     }
 
     // Retrieve the latest timestamp from WUM Live.
@@ -345,7 +358,7 @@ boolean parent_job() {
 
                     // Moves the product pack to the Jenkins workspace.
                     def packMovingOutput = executeShellCommand("cp " + packLocation + productZipName + " "
-                        + jobWorkspace + "/" + updatesFolderName + "/")
+                            + jobWorkspace + "/" + updatesFolderName + "/")
                     if (packMovingOutput != "" && packMovingOutput != null) {
                         println "Moving the Pack to Jenkins Workspace: " + packMovingOutput
                     }
@@ -353,7 +366,7 @@ boolean parent_job() {
                     // Renaming the pack name
                     def zipLocation = jobWorkspace + "/" + updatesFolderName + "/"
                     def rename = "mv " + zipLocation + productZipName + " " + zipLocation + productName + "-"
-                        + productVersion + "-" + channel + ".zip"
+                    +productVersion + "-" + channel + ".zip"
                     def renamingOutput = executeShellCommand(rename)
                     if (renamingOutput != "" && renamingOutput != null) {
                         println "Renaming the pack: " + renamingOutput
@@ -367,8 +380,8 @@ boolean parent_job() {
                     println "================ PACK Url: $packUrl =================="
 
                     channelViceDetails += '{ "channel": "' + channel + '", "channelStatus": "' + channelStatus
-                        + '", "jobName": "' + jobName + '", "updateFileUrl": "' + packUrl + '", "updateFileName": "'
-                        + packName + '" }' + comma
+                    +'", "jobName": "' + jobName + '", "updateFileUrl": "' + packUrl + '", "updateFileName": "'
+                    +packName + '" }' + comma
                 }
             } else {
                 println "Could not find a child job for: " + productVersionName + "-" + channel
@@ -382,7 +395,7 @@ boolean parent_job() {
 
         channelViceDetails += "]"
         updateDetails += '{ "Product": "' + productName + '", "Version": "' + productVersion
-            + '", "ChannelViceDetails": ' + channelViceDetails + '}' + comma
+        +'", "ChannelViceDetails": ' + channelViceDetails + '}' + comma
         println "\n"
     }
 
