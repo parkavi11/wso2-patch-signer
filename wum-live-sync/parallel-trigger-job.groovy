@@ -105,7 +105,6 @@ def resultsAnalysis() {
         env.trigger = true
     }
 
-
     jsonSlurper = null
 
 }
