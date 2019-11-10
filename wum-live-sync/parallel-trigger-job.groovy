@@ -1,6 +1,6 @@
 import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
-import hudson.console.*
+import jenkins.model.Jenkins
 
 // Executing a shell command obtained as the method parameter.
 def shellCommandOutput(command) {
@@ -13,19 +13,22 @@ def shellCommandOutput(command) {
         throw new Exception("Exception while executing the shell command: " + command + "\n" + e)
     }
     return sout + serr
+
 }
 
 
 // Returns the hyperlink of a link and its display text.
 def getHyperLink(link, text) {
     return hudson.console.ModelHyperlinkNote.encodeTo(link, text)
+
 }
 
 
 // Triggers a build of the UAT Batch Job and does not wait for its completion.
 def reTrigger() {
     if (env.TRIGGER) {
-        build(job: "others/uat_batch_wum3_test", wait: false)
+        def jobName = "others/uat_batch_wum3_test"
+        build(job: jobName, wait: false)
     }
 }
 
@@ -96,12 +99,6 @@ def resultsAnalysis() {
 
     def userInput = 'Proceed with Live Sync for Updates: ' + releasedUpdates
 
-    println "All Updates: " + allUpdates.update_id
-    println "Released Updates: " + releasedUpdates
-    println "Reverted Updates: " + revertedUpdates
-    println "Updates on Hold: " + withHeldUpdates.toSet()
-    println "Re-triggered Products: " + retriggeringProducts.toSet()
-
     if (retriggeringProducts.isEmpty()) {
         env.trigger = false
     } else {
@@ -119,10 +116,9 @@ def liveSync() {
     println("Release updates passed from main method>>>>>> " + releasedUpdates)
 
     //path to script file for logging into the instance and start live syncing
-    def proc = '/Users/parkavi/Documents/Parkavi/scripts/loginScript.sh'.execute()
-    proc.consumeProcessOutput(sout, serr)
+    def pathToScript = '/Users/parkavi/Documents/Parkavi/scripts/loginScript.sh'
+    def proc = pathToScript.execute()
     proc.waitForOrKill(10000)
-    println "out> $sout err> $serr"
 
 }
 
@@ -145,6 +141,7 @@ def getReleaseType(platformVersion, updateId) {
         }
     }
     return releasedState[0]
+
 }
 
 def updateLifecycleState(platformVersion, updateId, lifecycleState) {
@@ -153,15 +150,14 @@ def updateLifecycleState(platformVersion, updateId, lifecycleState) {
 
     try {
         def updateReleasedState = sh returnStdout: true, script: """
-                        set +x
-                        curl -k -v -X POST ${env.PMT_ENDPOINT}updatePmtToReleased -F patch=${
-            UPDATE_NAME
-        } -F releasedState=${LIFECYCLE_STATE}
-                        """
+            set +x
+            curl -k -v -X POST ${env.PMT_ENDPOINT}updatePmtToReleased -F patch=${
+                UPDATE_NAME
+            } -F releasedState=${LIFECYCLE_STATE}
+            """
     } catch (Exception e) {
-
+        println "Exception: " + e
     }
-
     def successMessage = "Successfully updated the lifecycle state in the PMT."
     if (!updateReleasedState.contains(successMessage)) {
         throw new Exception("Error while updating the lifecycle state in the PMT: " + UPDATE_NAME + "-" + LIFECYCLE_STATE)
@@ -297,5 +293,7 @@ pipeline {
         success {
             reTrigger()
         }
+        
     }
+
 }
